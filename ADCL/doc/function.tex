@@ -1,0 +1,268 @@
+\section{Functions and Function-sets}
+
+An {\tt ADCL\_Function} is the equivalent to an actual implementation of a
+particular communication pattern. An ADCL Function can have an attribute-set
+attached to it, in which case the values for each of the attributes in the
+attribute-set for this particular function have to be defined. A user can
+however also decide not to attach an attribute-set to a function by passing in
+{\tt ADCL\_ATTRSET\_NULL} at the particular argument.
+
+An {\tt ADCL\_Fnctset} is a collection of ADCL functions providing the same
+functionality. All Functions in a function-set have to have the same
+attribute-set. ADCL provides pre-defined function sets, see
+section~\ref{fnctset-predef} for a list of predefined function-sets. The user
+can also register its own functions in order to utilize the ADCL runtime
+selection logic.
+
+\begin{verbatim}
+typedef void ADCL_work_fnct_ptr ( ADCL_Request req );
+int ADCL_Function_create ( ADCL_work_fnct_ptr *fnctp, 
+      ADCL_Attrset attrset, int *array_of_attrvalues,  
+      char *name, ADCL_Function *fnct);
+
+
+subroutine ADCL_Function_create ( fnctp, attrset, 
+      array_of_attrvalues, name, fnct, ierror )
+external fnctp
+integer attrset, fnct, ierror
+integer array_of_attrvalues(*)
+char name (*)	                                
+
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt fnctp}(IN): function pointer to the actual implementation. The prototype has
+     to be of type {\tt ADCL\_work\_fnct\_ptr}.
+\item {\tt attrset}(IN): valid ADCL attribute-set handle, or {\tt ADCL\_ATTRSET\_NULL}. Passing the NULL attribute-set 
+   object in forces ADCL to use the brute-force runtime search algorithm.
+\item {\tt array\_of\_attrvalues}(IN): if an attribute-set has been specified, this array of
+ integers has to provide the values for each attribute in the attribute-set. 
+\item {\tt name}(IN): name for the function. The length of the character string can not exceed 
+   {\tt ADCL\_MAX\_NAMELEN}. It is allowed to pass in a NULL pointer instead of a string.
+\item {\tt fnct}(OUT): handle to the ADCL function object.
+\end{itemize}
+
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Function_create_async ( ADCL_work_fnct_ptr *init_fnct, 
+         ADCL_work_fnct_ptr *wait_fnct, 
+         ADCL_Attrset attrset, int *array_of_attrvalues, 
+         char *name, ADCL_Function *fnct);
+
+subroutine ADCL_Function_create_async ( init_fnct, wait_fnct, 
+    attrset, array_of_attrvalues, 	name, fnct, ierror )
+external init_fnct, wait_fnct
+integer attrset, fnct, ierror
+integer array_of_attrvalues(*)
+char name (*)	  
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt init\_fnct}(IN): function pointer to the actual implementation of the initiation function. The prototype has
+     to be of type {\tt ADCL\_work\_fnct\_ptr}.
+\item {\tt wait\_fnct}(IN): function pointer to the actual implementation of the completion function. The prototype has
+     to be of type {\tt ADCL\_work\_fnct\_ptr}.
+\item {\tt attrset}(IN): valid ADCL attribute-set handle, or {\tt ADCL\_ATTRSET\_NULL}. Passing the NULL attribute-set 
+   object in forces ADCL to use the brute-force runtime search algorithm.
+\item {\tt array\_of\_attrvalues}(IN): if an attribute-set has been specified, this array of
+ integers has to provide the values for each attribute in the attribute-set. 
+\item {\tt name}(IN): name for the function. The length of the character string can not exceed 
+  {\tt ADCL\_MAX\_NAMELEN}. It is allowed to pass in a NULL pointer instead of a string.
+\item {\tt fnct}(OUT): handle to the ADCL function object.
+\end{itemize}
+
+
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Function_free ( ADCL_Function *fnct );
+
+subroutine ADCL_Function_free ( fnct, ierror )
+integer fnct, ierror
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt fnct}(INOUT): valid handle to an ADCL function. Upon return, the handle is set to {\tt ADCL\_FUNCTION\_NULL}
+\end{itemize}
+
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Fnctset_create ( int maxnum, ADCL_Function *fncts, 
+       char *name, ADCL_Fnctset *fnctset );
+
+subroutine ADCL_Fnctset_create ( maxnum, fncts, name, 
+       fnctset, ierror )
+integer maxnum, fnctset, ierror
+integer fncts(*)
+char name (*)
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt maxnum}(IN): number of ADCL functions to be bundled to a function set
+\item {\tt fncts}(IN): array of size {\tt maxnum} containing the handles to
+  the ADCL functions. All functions have to provide the same attribute-set.
+\item {\tt name}(IN): name of the function set. It is allowed to pass in a
+  NULL pointer instead of a name. The length of the character string can not
+  exceed {\tt ADCL\_MAX\_NAMELEN}.
+\item {\tt fnctset}(OUT): handle for the ADCL function-set.
+\end{itemize}
+
+
+The following two functions provide a short cut for scenarios, where a single function
+shall be executed with different attribute values. Thus, instead of the user
+having to create all the individual funtions and register them with ADCL, this
+interface provides the opportunity to specify the function pointer, an
+attribute set, and get an Functionset handle back. ADCL will create internally
+a function with the same function pointer for each possible combination of
+attribute values.
+
+\begin{verbatim}
+int ADCL_Fnctset_create_single_fnct ( ADCL_work_fnct_ptr *fnctp, 
+         ADCL_Attrset attrset, char *name, ADCL_Function *fnct);
+
+subroutine ADCL_Function_create_async ( fnctp, attrset, name, 
+         fnct, ierror )
+external fnctp
+integer attrset, fnct, ierror
+char name (*)	  
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt fnctp}(IN): function pointer to the actual implementation of the function. The prototype has
+     to be of type {\tt ADCL\_work\_fnct\_ptr}.
+\item {\tt attrset}(IN): valid ADCL attribute-set handle, or {\tt
+    ADCL\_ATTRSET\_NULL}. It is illegal for this function to pass in the NULL attribute-set 
+    handle.
+\item {\tt name}(IN): name for the function. The length of the character string can not exceed 
+  {\tt ADCL\_MAX\_NAMELEN}. It is allowed to pass in a NULL pointer instead of a string.
+\item {\tt fnct}(OUT): handle to the ADCL function object.
+\end{itemize}
+
+\begin{verbatim}
+int ADCL_Fnctset_create_single_fnct_async ( ADCL_work_fnct_ptr *ifnct, 
+         ADCL_work_fnct_ptr *wfnct, ADCL_Attrset attrset, char *name, 
+         ADCL_Function *fnct);
+
+subroutine ADCL_Function_create_async ( ifnct, wfnct, attrset, name, 
+         fnct, ierror )
+external init_fnct, wait_fnct
+integer attrset, fnct, ierror
+char name (*)	  
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt ifnct}(IN): function pointer to the actual implementation of
+  the init function. The prototype has to be of type {\tt ADCL\_work\_fnct\_ptr}.
+\item {\tt wfnct}(IN): function pointer to the actual implementation of
+  the completion function. The prototype has to be of type {\tt ADCL\_work\_fnct\_ptr}.
+\item {\tt attrset}(IN): valid ADCL attribute-set handle, or {\tt
+    ADCL\_ATTRSET\_NULL}. It is illegal for this function to pass in the NULL attribute-set 
+    handle.
+\item {\tt name}(IN): name for the function. The length of the character string can not exceed 
+  {\tt ADCL\_MAX\_NAMELEN}. It is allowed to pass in a NULL pointer instead of a string.
+\item {\tt fnct}(OUT): handle to the ADCL function object.
+\end{itemize}
+
+
+
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Fnctset_free   ( ADCL_Fnctset *fnctset );
+
+subroutine ADCL_Fnctset_free ( fnctset, ierror )
+integer fnctset, ierror
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt fnctset}(INOUT): valid ADCL function-set handle to be freed. After successful completion, the handle is set to {\tt ADCL\_FNCTSET\_NULL}.
+\end{itemize}
+
+
+\pagebreak
+\subsection{Predefined Function-sets}
+\label{fnctset-predef}
+
+ADCL currently supports two predefined function-sets: 
+\begin{itemize}
+\item {\tt ADCL\_FNCTSET\_NEIGHBORHOOD}: a function-set supporting
+  n-dimensional neighborhood communication. The dimension of the neighborhood
+  communication is determined by the dimension of the vector object used
+  during the request creation time.
+\item {\tt ADCL\_FNCTSET\_SHIFT}: a function-set supporting n-dimensional
+  shift operations. The dimension of the shift operation is determined by the
+  vector object(s) used during the request creation.
+\end{itemize}
+
+Other predefined function-sets might be added in following releases of ADCL.
+
+\subsection{Examples}
+
+The following is an example for a code registering three functions without an
+attribute-set, and combining them to a function-set. Since there is no
+attribute-set attached to the functions, the array of attribute-values
+argument of the ADCL function constructors can be a NULL pointer. Please note,
+that not setting an attribute-set forces ADCL to fall back to the brute force
+runtime selection logic.
+\begin{verbatim}
+#include <stdio.h>
+#include "ADCL.h"
+#include "mpi.h"
+
+void test_func_1 ( ADCL_Request req );
+void test_func_2 ( ADCL_Request req );
+void test_func_3 ( ADCL_Request req );
+
+int main ( int argc, char ** argv ) 
+{
+    ADCL_Function funcs[3];
+    ADCL_Fnctset fnctset;
+    int i;
+        
+    MPI_Init ( &argc, &argv );
+    ADCL_Init ();
+
+    ADCL_Function_create ( (ADCL_work_fnct_ptr *)test_func_1, 
+         ADCL_ATTRSET_NULL, NULL, "test_func_1", &(funcs[0]));
+    ADCL_Function_create ( (ADCL_work_fnct_ptr *)test_func_2, 
+         ADCL_ATTRSET_NULL, NULL, "test_func_2", &(funcs[1]));
+    ADCL_Function_create ( (ADCL_work_fnct_ptr *)test_func_3, 
+         ADCL_ATTRSET_NULL, NULL, "test_func_3", &(funcs[2]));
+
+    ADCL_Fnctset_create ( 3, funcs, "trivial functions", 
+         &fnctset );
+
+    /* Do something with the fnctset */
+    
+    ADCL_Fnctset_free ( &fnctset );
+    for ( i=0; i<3; i++ ) {
+      	ADCL_Function_free ( &funcs[i] );
+    }    
+    ADCL_Finalize ();
+    MPI_Finalize ();
+    return 0;
+}
+
+void test_func_1 ( ADCL_Request req ) {
+    int rank;
+    
+    MPI_Comm_rank ( MPI_COMM_WORLD, &rank );
+    printf("%d: In test_func_1 \n", rank);
+    return;
+}
+
+void test_func_2 ( ADCL_Request req ) {
+    int rank;
+    
+    MPI_Comm_rank ( MPI_COMM_WORLD, &rank );
+    printf("%d: In test_func_2\n", rank);
+    return;
+}
+
+void test_func_3 ( ADCL_Request req ) {
+    int rank;
+    
+    MPI_Comm_rank ( MPI_COMM_WORLD, &rank ); 
+    printf("%d: In test_func_3\n", rank);
+    return;
+}
+
+\end{verbatim}

@@ -1,0 +1,61 @@
+#
+# Copyright (c) 2007 Cisco, Inc. All rights reserved.
+#
+
+#
+# Format of Input file:
+# Parameter_Name -a "aggregate" -d default_value -p possible_values 
+# -r start_value end_value -t traversal_method arguments -i "rpn"
+#
+
+#btl_openib_max_btls -d -1 -p -1 1 2 3
+#btl_openib_free_list_num -d 8 -r 1 256 -t increment + 8
+#btl_openib_free_list_max -d -1 -r 256 1048576 -t increment * 2
+#btl_openib_free_list_inc -d 32 -r 1 1048576 -t increment * 2
+#btl_openib_reg_mru_len -d 16 -r 1 1024 -t increment * 2
+#btl_openib_ib_cq_size -d 1000 -r 1 5000 -t increment * 2
+#btl_openib_ib_sg_list_size -d 4 -r 1 256 -t increment * 2
+#btl_openib_ib_psn -d 0 -r 0 100 -t increment + 8
+#btl_openib_ib_qp_ous_rd_atom -d 4 -r 0 30 -t increment + 1
+#btl_openib_ib_mtu -d 3 -r 1 5 -t increment + 1
+#btl_openib_ib_min_rnr_timer -d 5 -r 0 32 -t increment + 1
+#btl_openib_ib_timeout -d 10 -r 0 32 -t increment + 1
+#btl_openib_ib_retry_count -d 7 -r 0 7 -t increment + 1
+#btl_openib_ib_rnr_retry -d 7 -r 0 7 -t increment + 1
+#btl_openib_ib_max_rdma_dst_ops -d 4 -r 0 32 -t increment + 1
+#btl_openib_ib_service_level -d 0 -r 0 32 -t increment + 1
+#btl_openib_ib_static_rate -d 0 -r 0 32 -t increment + 1
+#btl_openib_use_eager_rdma -d 1 -r 0 1 -t increment + 1
+#btl_openib_eager_rdma_threshold -d 16 -r 1 512 -t increment * 2 -i "btl_openib_use_eager_rdma 1 ="
+#btl_openib_max_eager_rdma -d 16 -r 0 512 -t increment * 2 -i btl_openib_use_eager_rdma
+#btl_openib_eager_rdma_num -d 16 -r 1 512 -t increment * 2 -i btl_openib_use_eager_rdma
+#btl_openib_btls_per_lid -d 1 -r 1 10 -t increment + 1
+#btl_openib_max_lmc -d 0 -r 0 10 -t increment + 1
+#btl_openib_buffer_alignment -d 64 -r 1 1024 -t increment * 2
+#btl_openib_exclusivity -d 1024 -r 0 4096 -t increment * 2
+#btl_openib_flags -d 54 -r 1 7 -t increment + 1
+#btl_openib_eager_limit -d 12288 -r 1000 20000 -t increment + 1000 
+#btl_openib_min_send_size -d 32768 -r 1 1048576 -t increment * 2
+#btl_openib_max_send_size -d 65536 -r 1 1048576 -t increment * 2
+#btl_openib_rdma_pipeline_offset -d 1048576 -r 1 16777216 -t increment * 2
+#btl_openib_rdma_pipeline_frag_size -d 1048576 -r 1 16777216 -t increment * 2
+#btl_openib_min_rdma_pipeline_size -d 262144 -r 0 16777216 -t increment * 2
+#btl_openib_bandwidth -d 800 -r 1 1600 -t increment + 100
+#btl_openib_latency -d 10 -r 0 50 -t increment + 1
+btl_openib_rq_1_type -p P -v
+btl_openib_rq_2_type -v -p S
+btl_openib_rq_1_rd_num -v -d 8 -r 64 256 -t increment * 2
+btl_openib_rq_2_rd_num -v -d 8 -r 64 256 -t increment * 2
+btl_openib_rq_1_win -v -d 4 -r 1 32 -t increment + 4
+btl_openib_rq_2_max_pending_sends -v -d 128 -r 64 256 -t increment * 2
+btl_openib_receive_queues -a "$btl_openib_rq_1_type$,$btl_openib_rq_1_rd_num$,$btl_openib_rq_1_win$;$btl_openib_rq_2_type$,$btl_openib_rq_2_rd_num$,$btl_openib_rq_2_max_pending_sends$"
+#
+# Removed Params
+#
+#btl_openib_rd_num -d 8 -r 1 512 -t increment * 2 -i "btl_openib_use_srq 0 ="
+#btl_openib_rd_low -d 6 -r 1 64 -t increment + 2 -i "btl_openib_use_srq 0 ="
+#btl_openib_rd_win -d 4 -r 1 32 -t increment + 1 -i "btl_openib_use_srq 0 ="
+#btl_openib_use_srq -d 0 -r 0 1 -t increment + 1
+#btl_openib_srq_rd_max -d 1000 -r 0 5000 -t increment * 2 -i btl_openib_use_srq
+#btl_openib_srq_rd_per_peer -d 16 -r 1 512 -t increment * 2 -i btl_openib_use_srq
+#btl_openib_srq_sd_max -d 8 -r 1 512 -t increment * 2 -i btl_openib_use_srq

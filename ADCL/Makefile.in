@@ -1,0 +1,51 @@
+#
+# Copyright (c) 2006-2007      University of Houston. All rights reserved.
+# $COPYRIGHT$
+#
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+include Makefile.defs
+
+HEADER = $(ADCL_INC_DIR)/ADCL_array.h       \
+	 $(ADCL_INC_DIR)/ADCL_change.h      \
+	 $(ADCL_INC_DIR)/ADCL_config.h	    \
+	 $(ADCL_INC_DIR)/ADCL_emethod.h     \
+	 $(ADCL_INC_DIR)/ADCL_data.h        \
+	 $(ADCL_INC_DIR)/ADCL_fprototypes.h \
+	 $(ADCL_INC_DIR)/ADCL.h             \
+	 $(ADCL_INC_DIR)/ADCL_internal.h    \
+	 $(ADCL_INC_DIR)/ADCL_memory.h      \
+	 $(ADCL_INC_DIR)/ADCL_method.h      \
+	 $(ADCL_INC_DIR)/ADCL_packunpack.h  \
+	 $(ADCL_INC_DIR)/ADCL_request.h     \
+	 $(ADCL_INC_DIR)/ADCL_subarray.h    \
+	 $(ADCL_INC_DIR)/ADCL_vector.h      \
+	 @dumpi_inc@ \
+
+
+all:
+	cd src/framework ; make 
+	cd src/memory ; make
+	cd src/communication ; make 
+	cd src/adcl/C ; make all 
+	cd src/adcl/f90 ; make all 
+	@dumpi_make@
+
+clean:
+	cd src/framework ; make clean
+	cd src/memory ; make clean
+	cd src/communication ; make clean
+	cd src/adcl/C ; make clean 
+	cd src/adcl/f90 ; make clean 
+	@dumpi_clean@
+	rm -rf *~ ./include/*~ 
+	rm -rf ./lib/libadcl.a
+
+install:
+	test -z "@prefix@/lib" || mkdir -p "@prefix@/lib"	
+	install -c -m 644 $(ADCL_LIB_DIR)/libadcl.a  @prefix@/lib/
+	test -z "@prefix@/include" || mkdir -p "@prefix@/include"	
+	install -c -m 644 $(ADCL_INC_DIR)/ADCL.h  @prefix@/include/	
+	install -c -m 644 $(ADCL_INC_DIR)/ADCL.inc @prefix@/include/

@@ -1,0 +1,43 @@
+#
+# Copyright (c) 2006-2007      University of Houston. All rights reserved.
+# $COPYRIGHT$
+#
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+
+# Generated automatically from Makefile.in by configure.
+#Path of MPI-Library on the Machine
+
+MPI_DIR     = @mpi_dir@
+MPI_INC_DIR = @mpi_inc_dir@
+MPI_BIN_DIR = @mpi_bin_dir@
+MPI_LIB_DIR = @mpi_lib_dir@
+
+ADCL_DIR      = @adcl_dir@
+ADCL_BIN_DIR  = @adcl_bin_dir@
+ADCL_INC_DIR  = @adcl_inc_dir@
+ADCL_LIB_DIR  = @adcl_lib_dir@
+
+ADCL_LIB      = @adcl_lib_name@
+
+
+#Set some Flags
+AR	    = ar
+AR_FLAGS    = clr
+
+
+GSL_INC_FLAGS = @adcl_gsl_inc_flag@
+GSL_LD_FLAGS  = @adcl_gsl_ld_flag@
+
+#CC          = $(MPI_BIN_DIR)/@mpi_cc@
+CC	    = @c_compiler@
+CFLAGS      = @CFLAGS@ -I$(ADCL_INC_DIR) @adcl_papi_inc_flag@ 
+LDFLAGS     = @LDFLAGS@ $(ADCL_LIB_DIR)/$(ADCL_LIB) -lm @adcl_papi_ld_flag@ 
+
+#FC          = $(MPI_BIN_DIR)/@mpi_f90@
+FC	    = @f_compiler@
+FFLAGS      = @FFLAGS@ -I$(ADCL_INC_DIR) @adcl_papi_inc_flag@ 
+FLDFLAGS    = @FLDFLAGS@ $(ADCL_LIB_DIR)/$(ADCL_LIB) -lm @adcl_papi_ld_flag@
+
