@@ -301,6 +301,10 @@ int main(int argc , char *argv[])
     {
         current--;
     }
+    /* we execute till num_comb + 1, because ADCL requires to execute one more 
+       to switch into the decision state. The last function executed is the 
+       winner function 
+    */
     for (i=num_tested ; i<num_comb+1 ; i++) 
     {
         if (status || verbose || debug) 
