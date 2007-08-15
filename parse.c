@@ -19,6 +19,7 @@ static int get_possible_values (int);
 static int parse (char *, int);
 static int get_num_values (char *);
 static int set_rpn_stack_elements (int);
+static int set_string_values (char *);
 
 int otpo_initialize_list (char *file_name, int num_parameters)
 {
@@ -141,58 +142,12 @@ static int parse (char *file_name, int num_parameters)
                 /* allocate all possible values as strings if they are specified by the user */
                 token = strtok (NULL, "{}");
                 values_string = strdup (token);
-                tok = strtok (values_string, " ,\t\n");
-                
-                while (1) 
-                {
-                    if (NULL == tok)
-                    {
-                        break;
-                    }
-                    if (MAX_VALUES == list_params[i].num_values)
-                    {
-                        fprintf (stderr,
-                                 "You have reached the limit of possible string values (%d)\n",
-                                 MAX_VALUES);
-                        exit (1);
-                    }
-                    list_params[i].string_values[list_params[i].num_values] = 
-                        strdup(tok);
-                    list_params[i].num_values ++;
-                    tok = strtok (NULL," \t\n");
-                }
+                set_string_values (values_string);
+                token = strtok (NULL," \t\n");
                 if (NULL != values_string)
                 {
                     free(values_string);
                 }
-                /*
-                   the int array in list_params will be the same as the strings, if they can 
-                   be converted into integers, otherwise it will be from 0->num_values 
-                */
-                list_params[i].possible_values = (int *)malloc(sizeof(int) * 
-                                                               list_params[i].num_values);
-                if (NULL == list_params[i].possible_values) 
-                {
-                    fprintf (stderr,"Malloc Failed...\n");
-                    return NO_MEMORY;
-                }
-                for (j=0 ; j<list_params[i].num_values ; j++) 
-                {
-                    if (list_params[i].string_values[j][0] != '0' && 
-                        atoi(list_params[i].string_values[j]) == 0) 
-                    {
-                        break;
-                    }
-                    list_params[i].possible_values[j] = atoi(list_params[i].string_values[j]);
-                }
-                if (j != list_params[i].num_values)
-                {
-                    for (j=0 ; j<list_params[i].num_values ; j++) 
-                    {
-                        list_params[i].possible_values[j] = j;
-                    }
-                }
-                token = strtok (NULL," \t\n");
             }
 
             else if (0 == strcmp ("-a",token)) 
@@ -304,9 +259,9 @@ static int parse (char *file_name, int num_parameters)
                 }
                 token = strtok (NULL," \t\n");
             }
-            else 
+            else
             {
-                fprintf(stderr, "Invalid Option in Param file...\n");
+                fprintf(stderr, "Invalid Option %s in Param file...\n",token);
                 exit(1);
             }
         }
@@ -568,6 +523,59 @@ static int set_rpn_stack_elements (int num_parameters)
     return SUCCESS;
 }
 
+static int set_string_values (char *values)
+{
+    char *tok;
+    int i,j;
+
+    tok = strtok (values, " ,\t\n");
+    while (1)
+    {
+        if (NULL == tok)
+        {
+            break;
+        }
+        if (MAX_VALUES == list_params[i].num_values)
+        {
+            fprintf (stderr,
+                     "You have reached the limit of possible string values (%d)\n",
+                     MAX_VALUES);
+            exit (1);
+        }
+        list_params[i].string_values[list_params[i].num_values] = 
+            strdup(tok);
+        list_params[i].num_values ++;
+        tok = strtok (NULL," \t\n");
+    }
+
+    /*
+      the int array in list_params will be the same as the strings, if they can 
+      be converted into integers, otherwise it will be from 0->num_values 
+    */
+    list_params[i].possible_values = (int *)malloc(sizeof(int) * 
+                                                   list_params[i].num_values);
+    if (NULL == list_params[i].possible_values) 
+    {
+        fprintf (stderr,"Malloc Failed...\n");
+        return NO_MEMORY;
+    }
+    for (j=0 ; j<list_params[i].num_values ; j++) 
+    {
+        if (list_params[i].string_values[j][0] != '0' && 
+            atoi(list_params[i].string_values[j]) == 0) 
+        {
+            break;
+        }
+        list_params[i].possible_values[j] = atoi(list_params[i].string_values[j]);
+    }
+    if (j != list_params[i].num_values)
+    {
+        for (j=0 ; j<list_params[i].num_values ; j++) 
+        {
+            list_params[i].possible_values[j] = j;
+        }
+    }
+}
 int otpo_free_list_params_objects (int num_parameters) 
 {
     int i, j;
