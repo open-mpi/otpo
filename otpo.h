@@ -21,6 +21,7 @@ char *test_path;
 char **mca_args;
 int mca_args_len;
 char *hostf;
+time_t stamp;
 
 /* enum to the error codes that can be returned */
 enum otpo_error_codes

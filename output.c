@@ -161,7 +161,6 @@ static int write_intermediate_results (ADCL_Request req, double f_avg, char *out
     FILE *fp;
     char *timebuf;
     int num_functions, tmp;
-    time_t stamp;
 
     if (NULL == opendir (output_dir))
     {
@@ -174,7 +173,6 @@ static int write_intermediate_results (ADCL_Request req, double f_avg, char *out
     output_file[0] = '\0';
     strcat (output_file, output_dir);
     strcat (output_file, "/result");
-    time(&stamp);
     timebuf = (char *)malloc(sizeof(char) * 26);
     snprintf(timebuf,26,"%ld",stamp);
     strcat (output_file, timebuf);

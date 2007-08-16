@@ -65,6 +65,7 @@ int main(int argc , char *argv[])
     test_path = NULL;
     msg_size = NULL;
     resume = 0;
+    time(&stamp);
 
     if (SUCCESS != set_mca_options (argc, argv)) 
     {
@@ -177,7 +178,7 @@ int main(int argc , char *argv[])
     if (verbose || debug)
     {
         printf ("I will read the Parameter from %s\n", input_file);
-        printf ("I will write the intermediate results to %s\n", output_dir);
+        printf ("I will write the intermediate results to %s/result%ld\n", output_dir,stamp);
         printf ("In case I detect an interrupt, I will write my data to %s\n", interrupt_file);
         printf ("The Test case will be using %s, with %s byte messages\n",test,msg_size); 
     }
