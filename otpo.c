@@ -21,7 +21,6 @@ time_t t1, t2, et1, et2;
 
 int main(int argc , char *argv[]) 
 {
-    /*otpo_param_list_t *list_params = NULL;*/
     int num_parameters, i, k, num_comb, hr, min, sec;
     int num_tested, current_winner, resume, num_functions;
     char *input_file = NULL, *output_dir = NULL;

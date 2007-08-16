@@ -147,6 +147,8 @@ if test "${adcl_dir}" = "${PWD}/ADCL"; then
    OTPO_CONFIG_SUBDIR(ADCL, [$adcl_subdir_args], [HAPPY=1], [HAPPY=0])
 fi
 
+AM_CONDITIONAL([WANT_INTERNAL_ADCL], [test "${adcl_dir}" = "${PWD}/ADCL"])
+
 AC_MSG_CHECKING([if we want MPI_LEAVE_PINNED])
 AC_ARG_ENABLE(leave-pinned,
 AC_HELP_STRING ([--enable-leave-pinned],
