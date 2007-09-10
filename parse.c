@@ -126,8 +126,10 @@ static int parse (char *file_name, int num_parameters)
                 */
                 if (NULL != values_string)
                 {
+                    printf("values string: %s \n",values_string);
                     set_string_values (values_string, i);
                     free(values_string);
+                    values_string = NULL;
                 }
                 break;
 	    }
@@ -150,7 +152,8 @@ static int parse (char *file_name, int num_parameters)
             {
                 /* allocate all possible values as strings if they are specified by the user */
                 token = strtok (NULL, "{}");
-                values_string = strdup (token);                
+                printf("token string: %s\n",token);
+                values_string = strdup (token); 
                 token = strtok (NULL, " \t\n");
             }
 
