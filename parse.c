@@ -19,7 +19,7 @@ static int get_possible_values (int);
 static int parse (char *, int);
 static int get_num_values (char *);
 static int set_rpn_stack_elements (int);
-static int set_string_values (char *);
+static int set_string_values (char *, int);
 
 int otpo_initialize_list (char *file_name, int num_parameters)
 {
@@ -87,7 +87,7 @@ static int parse (char *file_name, int num_parameters)
         fprintf (stderr,"Unable to open file: %s\n",file_name);
         exit (1);
     }
-
+    
     i=0;    
     while (NULL != fgets (line, LINE_SIZE, fp))
     {
@@ -119,9 +119,18 @@ static int parse (char *file_name, int num_parameters)
         {
             if (NULL == token) 
             {
+                /* 
+                   If -p option is specified, then we set the sting values after we finish
+                   parsing the current line. The reason is that when we have two nested
+                   tokenizers, some badness is going on.
+                */
+                if (NULL != values_string)
+                {
+                    set_string_values (values_string, i);
+                    free(values_string);
+                }
                 break;
 	    }
-
             /* Virtual Param */
             else if (0 == strcmp ("-v",token)) 
             {
@@ -141,13 +150,8 @@ static int parse (char *file_name, int num_parameters)
             {
                 /* allocate all possible values as strings if they are specified by the user */
                 token = strtok (NULL, "{}");
-                values_string = strdup (token);
-                set_string_values (values_string);
-                token = strtok (NULL," \t\n");
-                if (NULL != values_string)
-                {
-                    free(values_string);
-                }
+                values_string = strdup (token);                
+                token = strtok (NULL, " \t\n");
             }
 
             else if (0 == strcmp ("-a",token)) 
@@ -523,10 +527,10 @@ static int set_rpn_stack_elements (int num_parameters)
     return SUCCESS;
 }
 
-static int set_string_values (char *values)
+static int set_string_values (char *values, int index)
 {
     char *tok;
-    int i,j;
+    int j;
 
     tok = strtok (values, " ,\t\n");
     while (1)
@@ -535,44 +539,45 @@ static int set_string_values (char *values)
         {
             break;
         }
-        if (MAX_VALUES == list_params[i].num_values)
+        if (MAX_VALUES == list_params[index].num_values)
         {
             fprintf (stderr,
                      "You have reached the limit of possible string values (%d)\n",
                      MAX_VALUES);
             exit (1);
         }
-        list_params[i].string_values[list_params[i].num_values] = 
+        list_params[index].string_values[list_params[index].num_values] = 
             strdup(tok);
-        list_params[i].num_values ++;
-        tok = strtok (NULL," \t\n");
+        list_params[index].num_values ++;
+        tok = strtok (NULL," ,\t\n");
     }
 
     /*
       the int array in list_params will be the same as the strings, if they can 
       be converted into integers, otherwise it will be from 0->num_values 
     */
-    list_params[i].possible_values = (int *)malloc(sizeof(int) * 
-                                                   list_params[i].num_values);
-    if (NULL == list_params[i].possible_values) 
+    list_params[index].possible_values = (int *)malloc(sizeof(int) * 
+                                                   list_params[index].num_values);
+    if (NULL == list_params[index].possible_values) 
     {
         fprintf (stderr,"Malloc Failed...\n");
         return NO_MEMORY;
     }
-    for (j=0 ; j<list_params[i].num_values ; j++) 
+    for (j=0 ; j<list_params[index].num_values ; j++) 
     {
-        if (list_params[i].string_values[j][0] != '0' && 
-            atoi(list_params[i].string_values[j]) == 0) 
+        if (list_params[index].string_values[j][0] != '0' && 
+            atoi(list_params[index].string_values[j]) == 0) 
         {
             break;
         }
-        list_params[i].possible_values[j] = atoi(list_params[i].string_values[j]);
+        list_params[index].possible_values[j] = 
+            atoi(list_params[index].string_values[j]);
     }
-    if (j != list_params[i].num_values)
+    if (j != list_params[index].num_values)
     {
-        for (j=0 ; j<list_params[i].num_values ; j++) 
+        for (j=0 ; j<list_params[index].num_values ; j++) 
         {
-            list_params[i].possible_values[j] = j;
+            list_params[index].possible_values[j] = j;
         }
     }
 }

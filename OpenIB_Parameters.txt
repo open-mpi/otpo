@@ -42,13 +42,16 @@
 #btl_openib_min_rdma_pipeline_size -d 262144 -r 0 16777216 -t increment * 2
 #btl_openib_bandwidth -d 800 -r 1 1600 -t increment + 100
 #btl_openib_latency -d 10 -r 0 50 -t increment + 1
-btl_openib_rq_1_type -p P -v
-btl_openib_rq_2_type -v -p S
-btl_openib_rq_1_rd_num -v -d 8 -r 64 256 -t increment * 2
-btl_openib_rq_2_rd_num -v -d 8 -r 64 256 -t increment * 2
-btl_openib_rq_1_win -v -d 4 -r 1 32 -t increment + 4
-btl_openib_rq_2_max_pending_sends -v -d 128 -r 64 256 -t increment * 2
-btl_openib_receive_queues -a "$btl_openib_rq_1_type$,$btl_openib_rq_1_rd_num$,$btl_openib_rq_1_win$;$btl_openib_rq_2_type$,$btl_openib_rq_2_rd_num$,$btl_openib_rq_2_max_pending_sends$"
+btl_openib_rq_1_type -v -p {P}
+btl_openib_rq_1_size -v -d 8 -r 64 256 -t increment * 2
+btl_openib_rq_1_num -v -d 8 -r 1 256 -t increment * 2
+btl_openib_rq_1_low_wat -v -d 32 -r 1 64 -t increment * 2 -i "btl_openib_rq_1_num btl_openib_rq_1_low_wat >"
+btl_openib_rq_2_type -v -p {S}
+btl_openib_rq_2_size -v -d 8 -r 64 256 -t increment * 2
+btl_openib_rq_2_num -v -d 8 -r 1 256 -t increment * 2
+btl_openib_rq_2_low_wat -v -d 32 -r 1 64 -t increment * 2 -i "btl_openib_rq_2_num btl_openib_rq_2_low_wat >"
+btl_openib_rq_2_max_pending_sends -v -d 128 -r 1 32 -t increment * 2 -i "btl_openib_rq_2_max_pending_sends btl_openib_rq_2_low_wat <"
+btl_openib_receive_queues -a "$btl_openib_rq_1_type$,$btl_openib_rq_1_size$,$btl_openib_rq_1_num$,$btl_openib_rq_1_low_wat$:$btl_openib_rq_2_type$,$btl_openib_rq_1_size$,$btl_openib_rq_2_num$,$btl_openib_rq_1_low_wat$,$btl_openib_rq_2_max_pending_sends$"
 #
 # Removed Params
 #

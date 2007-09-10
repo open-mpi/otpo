@@ -465,9 +465,9 @@ static int check_rpn (int num_parameters, int *attr_vals)
             }
             j ++;
         }
-        if (1 == rpn_stack_position && 
-            attr_vals[i] != list_params[i].possible_values[0])
-        { 
+        if (1 == rpn_stack_position
+            && attr_vals[i] != list_params[i].possible_values[0])
+        {
             ret = rpn_stack[0];
         }
         else if (1 != rpn_stack_position) 
