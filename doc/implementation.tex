@@ -1,0 +1,167 @@
+As mentioned earlier, OTPO is an Open MPI specific tool. This means that Open
+MPI must be installed before configuring and compiling OTPO. OTPO however is
+not an MPI application. OTPO is built on top of ADCL \cite{ADCL} (Abstract
+Data and Communication Library). In this section, we will shed some light on
+what ADCL is and its functionality, then we will talk about how OTPO is
+implemented and what is still missing.
+
+\subsection{ADCL}
+The Abstract Data and Communication Library is an application level
+communication library aiming at providing the highest possible performance for
+application level communication patterns within a given execution
+environment. A communication pattern is a defined as a repeatedly occuring
+communication operation incorporating a group of processes. The library
+provides for each communication pattern a large number of implementations and
+incorporates a runtime selection logic in order to choose the implementation
+leading to the highest performance of the application in the current
+platform. ADCL right now provides two runtime selection algorithms:
+\begin{enumerate}
+\item Brute Force Strategy: tests all available implemetations
+\item Heuristic Strategy: relying on attributes characterizing an
+  implemetation.
+\end{enumerate}
+In OTPO, the brute force strategy will be used, since we are interested in
+testing all possible combinations of parameters.
+
+Before we go into the details of how OTPO will use ADCL, we will explain the
+ADCL objects that are needed for the OTPO implementation:
+\begin{itemize}
+\item ADCL\_Attribute\cite{ADCL-spec}: an abstraction for a particular
+  charactersitic of a function. In OTPO, there will be an array of
+  ADCL\_Attribute objects, each holding an MCA parameter name and its possible
+  values.
+\item ADCL\_Attrset\cite{ADCL-spec}: is a set of ADCL attributes.
+\item ADCL\_Function\cite{ADCL-spec}: equivalent to an actual implementation
+  of a particular communication pattern. In OTPO an ADCL\_Function is an
+  object that holds one possible combination of values of the MCA
+  parameters. Each ADCL\_Function will have an ADCL\_Attrset attached to it.
+\item ADCL\_Fnctset\cite{ADCL-spec}: is a set of ADCL functions, which means
+  it's the structure that holds all the possible combinations of the MCA
+  parameter space provided by the user.
+\item ADCl\_Request\cite{ADCL-spec}: a user level handle that allows the
+  application to initiate a communication by starting a request. The use of
+  this object in OTPO will be more clear later when the implementation of OTPO
+  is explained.
+\end{itemize}
+
+ADCL is an MPI application, but as we stated earlier, OTPO will not be an MPI
+application. OTPO will always be a single process application and will not use
+any part of ADCL where MPI is needed. In order to achieve that, we created a
+dummy-mpi library within ADCL that can be enabled on configure. This dummy
+library is just meant to be there to allow ADCL to compile without the real
+MPI library. The dummy library basically defines MPI parameters to dummy
+values and MPI functions to do nothing. Another reason for the dummy MPI
+library is the fact that MPI and fork cause badness in the application.
+
+\subsection{OTPO}
+OTPO is implemented in C. OTPO is inteneded to read a file supplied by the
+user that contains all the parameter names that the user wants to test and
+their attributes in a specific format. OTPO then executes an MPI job,
+measuring latency from Netpipe\cite{netpipe}(the only measurement available
+right now). However the tests used for the measurements are modular, so at any
+point, another test measuring latency or something else like bandwidth can be
+added. OTPO outputs a list of the best parameter combinations for that test.
+
+OTPO is meant to run on the head node of a cluster, and it forks MPI jobs with
+the desired application (Netpipe, latency) after exporting the current
+combination of MCA parameters on the nodes.
+
+The parameter file contains the parameter names each followed by some options:
+\begin{itemize}
+\item -d default value
+\item -p {possible\_values}:option for the user to explicitly list the possible
+  values for the parameter
+\item -r start\_value end\_value: specify the start and end value for the
+  parameter.
+\item -t traversal method arguments: The method to traverse the range of
+  variables for the parameter. The increment method is only available now,
+  which takes the operation and the operator as arguments.
+\item -i rpn: RPN (reverse polish notation) condition that the parameter
+  combinations must satisfy.
+\item -v: specifies if the parameter is virtual, which means that it won't be
+  set as an environment varaible, but will be part of another parameter.
+\item -a {format string}: specifies that the parameter is an aggregate of
+  other parameters in a certain format. each subparameter is surrounded by \$
+  signs in the format string.
+\end{itemize}
+
+After the user creates this file, OTPO will be ready to run. The usage options
+for running OTPO are:
+\begin{itemize}
+\item -p InputFileName (file that contains the parameters) *
+\item -d (debug output)
+\item -v (verbose output)
+\item -s (status output)
+\item -n (silent/no output)
+\item -t test (name of test, Current supported: Netpipe)
+\item -w test\_path (path to the test on your system) *
+\item -l message\_length (default is 1 byte)
+\item -h hostfile
+\item -m mca\_params (mca parameters that you want your mpirun to run with)
+\item -f format (format of output, TXT)
+\item -o output\_dir (directory where the results will be placed, default: results)
+\item -b interrupt\_file (file to write data to when interrupted, default:
+  interrupt.txt)
+\item -r interrupt\_file (the file where contains the data to resume execution) 
+\end{itemize}
+
+OTPO parses the file, using simple string tokenizing techniques, and creates a
+global structure that holds all the parameters and their options. This
+structure will be used to generate the ADCL objects. 
+
+An array of ADCL attributes with size equals to the number of the parameters
+is allocated. Each attribute is created by generating all the possible values
+corresponding to that attribute, using the global structure. Then an attribute
+set is created from the array of attributes. The next step is to create an
+ADCL function object for each possible combination. So to do that, all the
+possible combinations are genereted, but before the function object is
+created, each combination is checked if it satisfies all the RPNs specified in
+the parameter file. If that's the case, then we create the ADCL function
+object for that combination, specifying at that point the pointer to the test
+function to call. An array of all the function objects that were created is
+used to create the function set. Finally, an ADCL request object is created to
+start the measurements.
+
+Now that we have an ADCL request object created, we start a request for the
+number of combination. Each request calls the test function pointer that was
+registered for the function object. The test function does the following:
+\begin{itemize}
+\item Fork off a child
+\item The child sets the arguments that needs to be provided to the mpirun
+  commnad, like the number of processes, mca parameters, and the test to run
+  (ex. Netpipe).
+\item The child then gets the current function object of the request with a
+  value for each parameter.
+\item The child exports the parameter values to the environment.
+\item Finally the child executes (using execvp) the mpirun with the argument
+  set.
+\item The parent checks if the child was successfull (the execvp succeeded)
+\item If the child succeeded, the parent will update the current request with
+  the value (ex, latency) that the child measured when the current parameters
+  were set.
+\item If the child didn't complete after some time, the parent kills it, and
+  updates the request with an invalid value.
+\end{itemize}
+
+When all the requests are executed, and the measurements for all the
+combinations have been updated to the ADCL request object, OTPO gathers the
+results and place them in a sub-directory. Every single run of OTPO produces a
+file with a time stamp that contains the best attribute combinations. It gives
+the best combination around the best value that it found. 
+
+These results that OTPO produce consist of the combinations that
+were found to be the best for the specified test on the specified machine. The
+result file contains all the best measured values, the number of combinations that
+produced these value, and the combinations themselves. This is surely not a
+readable end result to the user, since the result file might be very large,
+where we have thousands of different combinations. 
+
+These results files produced by OTPO are meant to be intermediate results to
+an analysis tool in OTPO that takes in any number of result files, does some
+sort of analysis, and gives the final analysis to the user. The analysis
+option in OTPO is still under development and research.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End: 

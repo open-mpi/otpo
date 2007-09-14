@@ -1,0 +1,63 @@
+As mentioned eariler, Open MPI has a modular architecture. The MCA is
+responsible for managing the services of component frameworks. Open MPI has a
+large list of MCA parameters that can be set by the user at runtime. Those
+parameters are runtime tunable per layer (OMPI, OPAL, ORTE), per framework, or
+per component. The MCA parameters change the behavior of the Open MPI code,
+without recompiling. In this section, we will explore few of these parameters
+and their effect on the performance of an application.
+
+\subsection{BTL OpenIB parameters}
+The BTL layer in Open MPI is a low level layer that is responsible for just
+transfering the bytes from one place to another. It is not concerned with
+other MPI functionality. 
+
+A user might want to change the network that is used for communication. In
+that case, he/she just needs to set a runtime flag that indicates the network
+that is needed. For example, if the user wants to use the Infiniband module,
+he/she just needs to add the follwing line to the runtime command: 
+{\tt --mca btl openib}
+
+In Open MPI, there are more than 50 MCA parameters that are related to the BTL
+Infiniband module, all of which can be modified at runtime. Modifying some of
+the parameters may not have an effect on the performance of an application,
+but others may do.
+Some of these parameters that configure the RDMA \cite{rdma} protocol include:
+\begin{itemize}
+\item {\tt btl\_openib\_ib\_max\_rdma\_dst\_opts}: Infiniband maximum pending
+  RDMA destination operations
+\item {\tt btl\_openib\_use\_eager\_rdma}: wether to use the RDMA protocol for
+  eager messages
+\item {\tt btl\_openib\_eager\_rdma\_threshold}: use RDMA for short messages
+  after this number of messages are received from a given peer
+\item {\tt btl\_openib\_max\_eager\_rdma}: maximum number of peers allowed to
+  use RDMA for short messages 
+\item {\tt btl\_openib\_eager\_rdma\_num}: Number of RDMA buffers to allocate
+  for small messages 
+\end{itemize}
+
+Another parameter that modifies the number and the configuration of recieve
+queues is: {\tt btl\_openib\_recieve\_queues} This parameter allows the
+specification of multiple receive queues for the InfiniBand network, where
+each queue has some numeric parameters. There are two types of queues:
+\begin{enumerate}
+\item Per-peer (P): each queue is dedicated to recieving messages from a
+  single, specific peer MPI process. A P queue can take the following
+  parameters:\\
+  {\tt P,<size>,<num\_buffers>,[<low\_watermark>[,<window\_size>[,<reserve>]]]}
+\item Shared receive queue (S): a receive queue is shared between all MPI
+  sending processes. An SRQ can take the following parameters: \\
+  {\tt P,<size>,<num\_buffers>,[<low\_watermark>[,<max\_pending\_sends>]]}
+\end{enumerate}
+
+All these parameters have default values in Open MPI, however, on different
+platforms, the best combination of values is not always the same. OTPO is a
+tool that can take in a set of parameters with a user specified range of
+possible values, and output the best combinations of parameter values after
+executing user specified tests that measure latency, bandwidth, etc... The
+next section will detail the status of OTPO and the future work to be done.
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End: 

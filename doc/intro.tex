@@ -1,0 +1,36 @@
+Open MPI\cite{gabriel:ompi} is an MPI-2\cite{mpi1} implementation that
+builds upon prior research from LAM/MPI\cite{lammpi}, LA-MPI\cite{la-mpi},
+and FT-MPI\cite{ftmpi}. The Open MPI design is centered around the MCA
+(Modular Component Architecture). The MCA manages the component frameworks and
+provides services to them, such as the ability to let the user input at
+runtime a value to be passed to the component frameworks. Component frameworks
+in Open MPI include:
+\begin{itemize}
+\item Point-to-Point Management Layer (PML)
+\item Collective Communication (COLL)
+\item Byte Transfer Layer (BTL)
+\end{itemize}
+
+Open MPI supports several network interconnects such as:
+\begin{itemize}
+\item GigaBit Ethernet
+\item InfiniBand\cite{ib}
+\item Myrinet
+\item Shared Memory
+\item UDAPL
+\end{itemize}
+
+In this paper, our focus will be on MCA parameters from the InfiniBand BTL
+layer. A few of those parameters and their impact on performance will be
+described in the next section.
+
+OTPO (Open Tool for Parameter Optimization) is a new tool developed in
+partnership between Cisco Systems and the University of Houston. OTPO is an
+Open MPI specific tool aiming at optimizing the values for a user
+provided combination of MCA parameters. Several dependencies exist between MCA
+parameters. Some of those dependencies are known, but others are hidden. OTPO
+also aims at discovering those hidden dependencies and the effect they have on
+performance measured by latency, bandwidth, etc...
+
+In this paper, the current status of OTPO and the work that still needs
+to be done is detailed.
