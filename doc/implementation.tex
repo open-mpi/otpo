@@ -9,7 +9,7 @@ implemented and what is still missing.
 The Abstract Data and Communication Library is an application level
 communication library aiming at providing the highest possible performance for
 application level communication patterns within a given execution
-environment. A communication pattern is a defined as a repeatedly occuring
+environment. A communication pattern is defined as a repeatedly occuring
 communication operation incorporating a group of processes. The library
 provides for each communication pattern a large number of implementations and
 incorporates a runtime selection logic in order to choose the implementation
@@ -27,27 +27,31 @@ Before we go into the details of how OTPO will use ADCL, we will explain the
 ADCL objects that are needed for the OTPO implementation:
 \begin{itemize}
 \item ADCL\_Attribute\cite{ADCL-spec}: an abstraction for a particular
-  charactersitic of a function. In OTPO, there will be an array of
+  charactersitic of a function. Each attribute is represented by the set of 
+  possible values for this characteristic. In OTPO, there will be an array of
   ADCL\_Attribute objects, each holding an MCA parameter name and its possible
   values.
-\item ADCL\_Attrset\cite{ADCL-spec}: is a set of ADCL attributes.
+\item ADCL\_Attrset\cite{ADCL-spec}: is a set of ADCL attributes. Which means 
+  it's the structure that holds all the MCA parameter provided by the user and 
+  their possible values.
 \item ADCL\_Function\cite{ADCL-spec}: equivalent to an actual implementation
   of a particular communication pattern. In OTPO an ADCL\_Function is an
   object that holds one possible combination of values of the MCA
-  parameters. Each ADCL\_Function will have an ADCL\_Attrset attached to it.
-\item ADCL\_Fnctset\cite{ADCL-spec}: is a set of ADCL functions, which means
-  it's the structure that holds all the possible combinations of the MCA
-  parameter space provided by the user.
-\item ADCl\_Request\cite{ADCL-spec}: a user level handle that allows the
-  application to initiate a communication by starting a request. The use of
-  this object in OTPO will be more clear later when the implementation of OTPO
-  is explained.
+  parameters.
+\item ADCL\_Fnctset\cite{ADCL-spec}: is a set of ADCL functions that have an 
+  ADCL\_Attrset attached to it. ADCL provides pre-defined function sets, such as
+  neighborhood communication. The user can however also register its own functions 
+  in order to utilize the ADCL runtime selection logic which is the case in OTPO.
+\item ADCl\_Request\cite{ADCL-spec}: a user level handle combining all the data 
+  provided by the user allowing the application to initiate a communication
+  by starting a request. The use of this object in OTPO will be more clear later 
+  when the implementation of OTPO is explained.
 \end{itemize}
 
-ADCL is an MPI application, but as we stated earlier, OTPO will not be an MPI
+ADCL is an add-on library to MPI, but as we stated earlier, OTPO will not be an MPI
 application. OTPO will always be a single process application and will not use
 any part of ADCL where MPI is needed. In order to achieve that, we created a
-dummy-mpi library within ADCL that can be enabled on configure. This dummy
+dummy-mpi library within ADCL that can be enabled on configure time. This dummy
 library is just meant to be there to allow ADCL to compile without the real
 MPI library. The dummy library basically defines MPI parameters to dummy
 values and MPI functions to do nothing. Another reason for the dummy MPI
