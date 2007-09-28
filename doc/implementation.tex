@@ -72,19 +72,19 @@ combination of MCA parameters on the nodes.
 
 The parameter file contains the parameter names each followed by some options:
 \begin{itemize}
-\item -d default value
-\item -p {possible\_values}:option for the user to explicitly list the possible
+\item d default value
+\item p {possible\_values}:option for the user to explicitly list the possible
   values for the parameter
-\item -r start\_value end\_value: specify the start and end value for the
+\item r start\_value end\_value: specify the start and end value for the
   parameter.
-\item -t traversal method arguments: The method to traverse the range of
+\item t traversal method arguments: The method to traverse the range of
   variables for the parameter. The increment method is only available now,
   which takes the operation and the operator as arguments.
-\item -i rpn: RPN (reverse polish notation) condition that the parameter
+\item i rpn: RPN (reverse polish notation) condition that the parameter
   combinations must satisfy.
-\item -v: specifies if the parameter is virtual, which means that it won't be
+\item v: specifies if the parameter is virtual, which means that it won't be
   set as an environment varaible, but will be part of another parameter.
-\item -a {format string}: specifies that the parameter is an aggregate of
+\item a {format string}: specifies that the parameter is an aggregate of
   other parameters in a certain format. each subparameter is surrounded by \$
   signs in the format string.
 \end{itemize}
@@ -92,21 +92,21 @@ The parameter file contains the parameter names each followed by some options:
 After the user creates this file, OTPO will be ready to run. The usage options
 for running OTPO are:
 \begin{itemize}
-\item -p InputFileName (file that contains the parameters) *
-\item -d (debug output)
-\item -v (verbose output)
-\item -s (status output)
-\item -n (silent/no output)
-\item -t test (name of test, Current supported: Netpipe)
-\item -w test\_path (path to the test on your system) *
-\item -l message\_length (default is 1 byte)
-\item -h hostfile
-\item -m mca\_params (mca parameters that you want your mpirun to run with)
-\item -f format (format of output, TXT)
-\item -o output\_dir (directory where the results will be placed, default: results)
-\item -b interrupt\_file (file to write data to when interrupted, default:
+\item p InputFileName (file that contains the parameters) *
+\item d (debug output)
+\item v (verbose output)
+\item s (status output)
+\item n (silent/no output)
+\item t test (name of test, Current supported: Netpipe)
+\item w test\_path (path to the test on your system) *
+\item l message\_length (default is 1 byte)
+\item h hostfile
+\item m mca\_params (mca parameters that you want your mpirun to run with)
+\item f format (format of output, TXT)
+\item o output\_dir (directory where the results will be placed, default: results)
+\item b interrupt\_file (file to write data to when interrupted, default:
   interrupt.txt)
-\item -r interrupt\_file (the file where contains the data to resume execution) 
+\item r interrupt\_file (the file where contains the data to resume execution) 
 \end{itemize}
 
 OTPO parses the file, using simple string tokenizing techniques, and creates a
