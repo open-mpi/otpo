@@ -51,7 +51,7 @@ btl_openib_rq_2_size -v -d 8 -r 65536 65536 -t increment * 2
 btl_openib_rq_2_num -v -d 8 -r 1 256 -t increment * 2
 btl_openib_rq_2_low_wat -v -d 32 -r 1 64 -t increment * 2 -i "btl_openib_rq_2_num btl_openib_rq_2_low_wat >"
 btl_openib_rq_2_max_pending_sends -v -d 128 -r 1 32 -t increment * 2 -i "btl_openib_rq_2_low_wat btl_openib_rq_2_max_pending_sends >"
-btl_openib_receive_queues -a "$btl_openib_rq_1_type$,$btl_openib_rq_1_size$,$btl_openib_rq_1_num$,$btl_openib_rq_1_low_wat$:$btl_openib_rq_2_type$,$btl_openib_rq_1_size$,$btl_openib_rq_2_num$,$btl_openib_rq_1_low_wat$,$btl_openib_rq_2_max_pending_sends$"
+btl_openib_receive_queues -a "$btl_openib_rq_1_type$,$btl_openib_rq_1_size$,$btl_openib_rq_1_num$,$btl_openib_rq_1_low_wat$:$btl_openib_rq_2_type$,$btl_openib_rq_1_size$,$btl_openib_rq_2_num$,$btl_openib_rq_2_low_wat$,$btl_openib_rq_2_max_pending_sends$"
 #
 # Removed Params
 #

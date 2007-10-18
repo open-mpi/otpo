@@ -15,27 +15,27 @@ struct list_elem
 };
 typedef struct list_elem list;
 
-static int get_possible_values (int);
-static int parse (char *, int);
+static int get_possible_values ();
+static int parse (char *);
 static int get_num_values (char *);
-static int set_rpn_stack_elements (int);
+static int set_rpn_stack_elements ();
 static int set_string_values (char *, int);
 
-int otpo_initialize_list (char *file_name, int num_parameters)
+int otpo_initialize_list (char *file_name)
 {
     int ret;
     
-    ret = parse (file_name , num_parameters);
+    ret = parse (file_name);
     if (SUCCESS != ret) 
     {
         return ret;
     }
-    ret = get_possible_values (num_parameters);
+    ret = get_possible_values ();
     if (SUCCESS != ret) 
     {
         return ret;
     }
-    ret = set_rpn_stack_elements (num_parameters); 
+    ret = set_rpn_stack_elements (); 
     if (SUCCESS != ret)
     {
         return ret;
@@ -48,9 +48,9 @@ int otpo_get_num_parameters (char *file_name)
 {
     FILE *fp;
     char line [LINE_SIZE], *token = NULL;
-    int num_parameters;
+    int num_params;
     
-    num_parameters = 0;
+    num_params = 0;
     fp = fopen (file_name, "r");
     if (NULL == fp) 
     { 
@@ -68,13 +68,13 @@ int otpo_get_num_parameters (char *file_name)
         {
             continue;
         }
-        num_parameters ++;
+        num_params ++;
     }
     fclose (fp);
-    return num_parameters;
+    return num_params;
 }
 
-static int parse (char *file_name, int num_parameters) 
+static int parse (char *file_name) 
 {
     FILE *fp;
     char line [LINE_SIZE], strtmp[LINE_SIZE], cond_name[LINE_SIZE];
@@ -296,7 +296,7 @@ static int get_num_values (char *str)
     return num;
 }
 
-static int get_possible_values (int num_parameters) 
+static int get_possible_values () 
 {
     int i, tmp, num, j;
     list *curr, *head;
@@ -395,7 +395,7 @@ static int get_possible_values (int num_parameters)
     return SUCCESS;
 }
 
-static int set_rpn_stack_elements (int num_parameters)
+static int set_rpn_stack_elements ()
 {
     int i, j, count;
     char *token=NULL, *condition_string=NULL;
@@ -582,7 +582,7 @@ static int set_string_values (char *values, int index)
         }
     }
 }
-int otpo_free_list_params_objects (int num_parameters) 
+int otpo_free_list_params_objects () 
 {
     int i, j;
     for (i=0 ; i<num_parameters ; i++) 

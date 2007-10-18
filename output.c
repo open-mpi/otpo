@@ -11,7 +11,7 @@
 
 #include "otpo.h"
 
-static int read_intermediate_results (char *, int, int, char ***, char ****);
+static int read_intermediate_results (char *, int, char ***, char ****);
 static int write_intermediate_results (ADCL_Request, double, char *); 
 static int print_output (ADCL_Request, double, FILE*);
 char output_file[50];
@@ -31,17 +31,17 @@ int otpo_write_results (ADCL_Request req, char *output_dir, int *num_functions)
     return SUCCESS;
 }
 
-int otpo_analyze_results (char *output_dir, int num_functions, int num_parameters)
+int otpo_analyze_results (char *output_dir, int num_functions)
 {
     char **names,***values;
     int i,j;
-
+    
     if (SUCCESS != read_intermediate_results (output_dir, num_functions, 
-                                              num_parameters, &names, &values))
+                                              &names, &values))
     {
         return FAIL;
     }
-
+    
     /* Free Stuff */
     for (j=0 ; j<num_parameters ; j++) 
     {
@@ -76,8 +76,7 @@ int otpo_analyze_results (char *output_dir, int num_functions, int num_parameter
     return SUCCESS;
 }
 static int read_intermediate_results (char *output_dir, int num_functions, 
-                                      int num_parameters, char ***names, 
-                                      char ****values)
+                                      char ***names, char ****values)
 {
     FILE *fp;
     char line[LINE_SIZE], *token;
@@ -104,7 +103,7 @@ static int read_intermediate_results (char *output_dir, int num_functions,
             return NO_MEMORY;
         }
     }
-
+    
     set = 0;
     current = 0;
  open1:
@@ -123,7 +122,7 @@ static int read_intermediate_results (char *output_dir, int num_functions,
     while (NULL != fgets (line, LINE_SIZE, fp)) 
     {
         if (NULL == line || '\n' == line[0] || 
-            '=' == line[0]) 
+            '=' == line[0] || '*' == line[0]) 
         {
             continue;
         }
@@ -222,23 +221,24 @@ static int print_output (ADCL_Request req, double n, FILE *fp)
                                              NULL);
     
     fprintf(fp,"%f %d\n", n, num_functions);
+    if (debug || verbose) 
+    {
+        printf ("Found %d Attribute Combinations with result = %f:\n", num_functions, n);
+    }
     for (i=0 ; i<num_functions ; i++) 
     {
         for (j=0 ; j<a_nums ; j++) 
         {
             fprintf (fp, "%s %s\n", a_names[j], a_values_names[i][j]);
-        }
-    }
-    
-    if (debug || verbose) 
-    {
-        printf ("Found %d Attribute Combinations with result = %f:\n", num_functions, n);
-        for (i=0 ; i<num_functions ; i++) 
-        {
-            for (j=0 ; j<a_nums ; j++) 
+            if (debug || verbose)
             {
                 printf ("%s = %s\n", a_names[j], a_values_names[i][j]);
-            }
+            }        
+        }
+
+        fprintf (fp, "******************************************************\n");
+        if (debug || verbose)
+        {
             printf ("******************************************************\n");
         }
     }

@@ -11,7 +11,7 @@
 #define CONDITION_LENGTH 500
 #define RPN_MAX_ELEMENTS 100
 #define MAX_VALUES 100
-int NUM_PARAMS;
+int num_parameters;
 int debug;
 int verbose;
 int status;
@@ -123,17 +123,17 @@ struct otpo_param_list_t
 #define OTPO_PARAM_SET_VIRTUAL(_param) ( (_param).otpo_flags |= OTPO_PARAM_VIRTUAL)
 #define OTPO_PARAM_SET_AGGREGATE(_param) ( (_param).otpo_flags |= OTPO_PARAM_AGGREGATE)
 
-int otpo_initialize_list (char *file_name, int num_parameters);
-int otpo_free_list_params_objects (int num_parameters);
+int otpo_initialize_list (char *file_name);
+int otpo_free_list_params_objects ();
 int otpo_get_num_parameters (char *file_name);
-int otpo_populate_attributes (int num_parameters, ADCL_Attribute *ADCL_param_attributes);
-int otpo_populate_function_set (int num_parameters, ADCL_Attrset attrset, 
-                                int num_functions, ADCL_Fnctset *fnctset);
+int otpo_populate_attributes (ADCL_Attribute *ADCL_param_attributes);
+int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions, 
+                                ADCL_Fnctset *fnctset);
 int otpo_write_results (ADCL_Request req, char *output_file, int *num_functions);
-int otpo_analyze_results (char *output_file, int num_functions, int num_parameters); 
+int otpo_analyze_results (char *output_file, int num_functions); 
 int otpo_write_interrupt_data (int num_tested, double *results, 
                                int current_winner, char *backup_file);
 int otpo_read_interrupt_data (char *backup_file, int *num_tested, double **results);
-int otpo_dump_list (int num_parameters);
+int otpo_dump_list ();
 void otpo_test_func (ADCL_Request req);
 #endif /* __PARSER_H__*/

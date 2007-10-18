@@ -16,9 +16,9 @@
 
 static int check_child_died (pid_t);
 static int kill_child (pid_t);
-static int get_next_combination (int, int *);
+static int get_next_combination (int *);
 static int get_next_val (int, int);
-static int check_rpn (int, int *);
+static int check_rpn (int *);
 static int pop ();
 static int push (int);
 static int set_mpi_arguments (char ***);
@@ -43,6 +43,8 @@ void otpo_test_func (ADCL_Request req)
     
     if (pipe (pipefd) < 0) 
     {
+        if (errno == EMFILE)
+            printf ("EMFILE caught\n");
         perror ("Pipe creation failed");
         exit (errno);
     }
@@ -70,7 +72,7 @@ void otpo_test_func (ADCL_Request req)
         set_mpi_arguments (&mpi_args);
         
         ADCL_Request_get_curr_function (req, &function_name, &attrs_names, &attrs_num,
-                                    &attrs_values_names, &attrs_values_num);
+                                        &attrs_values_names, &attrs_values_num);
         if (debug) 
         {
             printf ("***********************************\n");
@@ -235,7 +237,8 @@ void otpo_test_func (ADCL_Request req)
                 exit (1);
             }
         }
-                    
+        close (pipefd[0]);
+
         if (check_child_died (pid))
         {   
             if (SUCCESS != update_adcl_request (req))
@@ -272,7 +275,7 @@ void otpo_test_func (ADCL_Request req)
 }
 
 /* populate attributes for ADCL objects */
-int otpo_populate_attributes (int num_parameters, ADCL_Attribute *ADCL_param_attributes) {
+int otpo_populate_attributes (ADCL_Attribute *ADCL_param_attributes) {
     int i, j, digits,k;
     char **attr_val_names=NULL;
     
@@ -341,8 +344,8 @@ int otpo_populate_attributes (int num_parameters, ADCL_Attribute *ADCL_param_att
  * Create the function set
  * Return the number of functions 
  */
-int otpo_populate_function_set (int num_parameters, ADCL_Attrset attrset, 
-                                int num_functions, ADCL_Fnctset *fnctset)
+int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions, 
+                                ADCL_Fnctset *fnctset)
 {
     int i, count, more, attr_vals[num_parameters];
     ADCL_Function functions[num_functions];
@@ -357,7 +360,7 @@ int otpo_populate_function_set (int num_parameters, ADCL_Attrset attrset,
     
     while (more)
     {
-        if (check_rpn (num_parameters, attr_vals))
+        if (check_rpn (attr_vals))
         {
             ADCL_Function_create ((ADCL_work_fnct_ptr *)otpo_test_func, attrset, 
                                   attr_vals, test, &functions[count++]);
@@ -373,7 +376,7 @@ int otpo_populate_function_set (int num_parameters, ADCL_Attrset attrset,
                 printf("\n");
             }
         }
-        more = get_next_combination (num_parameters, attr_vals);
+        more = get_next_combination (attr_vals);
     }    
     ADCL_Fnctset_create (count, functions, "NETPIPE FNCTSET", fnctset);
 
@@ -381,7 +384,7 @@ int otpo_populate_function_set (int num_parameters, ADCL_Attrset attrset,
 }
 
 /* Check that the combination attr_vals, satisfies all rpns */
-static int check_rpn (int num_parameters, int *attr_vals)
+static int check_rpn (int *attr_vals)
 {
     int i, j, value1, value2, ret;
         
@@ -506,7 +509,7 @@ static int push (int value)
     return SUCCESS;
 }
 
-static int get_next_combination (int num_parameters, int *attr_vals)
+static int get_next_combination (int *attr_vals)
 {
     int i, current;
     
@@ -633,7 +636,7 @@ static int set_mpi_arguments (char *** mpi_args)
     (*mpi_args)[i++] = "--mca";
     (*mpi_args)[i++] = "mpi_paffinity_alone";
     (*mpi_args)[i++] = "1";
-#endif       
+#endif
     (*mpi_args)[i++] = test_path;
     (*mpi_args)[i++] = "-l";
     (*mpi_args)[i++] = msg_size;
@@ -676,6 +679,6 @@ static int update_adcl_request (ADCL_Request req)
         }
         ADCL_Request_update (req, latency*1000000);
     }
-
+    fclose (fp);
     return SUCCESS;
 }

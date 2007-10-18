@@ -13,7 +13,7 @@
 #include "otpo.h"
 
 void handler (int);
-static int get_num_combinations (int);
+static int get_num_combinations ();
 static int set_mca_options (int, char**);
 static void print_usage (void);
 int stop_signal;
@@ -21,7 +21,7 @@ time_t t1, t2, et1, et2;
 
 int main(int argc , char *argv[]) 
 {
-    int num_parameters, i, k, num_comb, hr, min, sec;
+    int i, k, num_comb, hr, min, sec;
     int num_tested, current_winner, resume, num_functions;
     char *input_file = NULL, *output_dir = NULL;
     char *interrupt_file = NULL;
@@ -203,7 +203,7 @@ int main(int argc , char *argv[])
     }
 
     /* initialize list_params */
-    if (SUCCESS != otpo_initialize_list (input_file, num_parameters))
+    if (SUCCESS != otpo_initialize_list (input_file))
     {
         exit (1);
     }
@@ -214,7 +214,7 @@ int main(int argc , char *argv[])
     
     if (debug)
     {
-        otpo_dump_list (num_parameters);       
+        otpo_dump_list ();       
     }
     
     /* allocating the list of ADCL attributes */
@@ -225,17 +225,17 @@ int main(int argc , char *argv[])
         exit (1);
     }
     
-    if (SUCCESS != otpo_populate_attributes (num_parameters, ADCL_param_attributes))
+    if (SUCCESS != otpo_populate_attributes (ADCL_param_attributes))
     {
         exit(1);
     }
     ADCL_Attrset_create (num_parameters, ADCL_param_attributes, &ADCL_param_attrset);
 
     /* total number of combinations */
-    num_comb = get_num_combinations (num_parameters);
+    num_comb = get_num_combinations ();
 
-    if (FAIL == (num_comb = otpo_populate_function_set (num_parameters, ADCL_param_attrset, 
-                                                        num_comb, &ADCL_param_fnctset)))
+    if (FAIL == (num_comb = otpo_populate_function_set (ADCL_param_attrset, num_comb, 
+                                                        &ADCL_param_fnctset)))
     {
         exit(1);
     }
@@ -359,10 +359,9 @@ int main(int argc , char *argv[])
     {
         exit(1);
     }
-
+    
     /* Output the results- seperate*/ 
-    if (SUCCESS != otpo_analyze_results (output_dir, num_functions, 
-                                         num_parameters))
+    if (SUCCESS != otpo_analyze_results (output_dir, num_functions))
     {
         exit(1);
     }
@@ -390,7 +389,7 @@ int main(int argc , char *argv[])
     {
         free (interrupt_file);
     }
-    otpo_free_list_params_objects(num_parameters);
+    otpo_free_list_params_objects();
     if (NULL != list_params) 
     {
         free (list_params);
@@ -462,7 +461,7 @@ void handler (int sig)
 /*
  * Function to get the total number of combinations of attibute values
  */ 
-static int get_num_combinations (int num_parameters)
+static int get_num_combinations ()
 {
     int i;
     int num;
@@ -521,7 +520,7 @@ static int set_mca_options (int argc, char **argv)
     return SUCCESS;
 }
 
-int otpo_dump_list (int num_parameters)
+int otpo_dump_list ()
 {
     int i,k;
 
