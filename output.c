@@ -136,7 +136,11 @@ static int read_intermediate_results (char *output_dir, int num_functions,
             {
                 for (j=0 ; j<num_parameters ; j++) 
                 {
-                    fgets (line, LINE_SIZE, fp);
+                    do
+                    {
+                        fgets (line, LINE_SIZE, fp);
+                    }
+                    while ('*' == line[0]);
                     token = strtok (line," \t\n");
                     if (0 == set)
                     {
