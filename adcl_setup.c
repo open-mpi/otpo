@@ -626,7 +626,7 @@ static int set_mpi_arguments (char *** mpi_args)
     {
         (*mpi_args)[i++] = "--bynode";
     }
-    
+
 #if LEAVE_PINNED
     (*mpi_args)[i++] = "--mca";
     (*mpi_args)[i++] = "mpi_leave_pinned";
