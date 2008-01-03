@@ -1,0 +1,62 @@
+In this section, an MCA parameter that we mentioned in section two will be
+evaluated. The parameter {\tt btl\_openib\_recieve\_queues} will be
+evaluated. We saw that this parameter is a combination of several recieve
+queue, where each queue in turn takes other parameters. 
+
+For OTPO to handle this kind of parameter, this parameter should be specified
+as an aggregate of other virtual parameters. In our test, we decided to use
+two recieve queues, one Per-peer queue and one shared receive queue. The
+following specification was used for the MCA parameter:
+
+\begin{itemize}
+\item {\tt btl\_openib\_rq\_1\_type}: P
+\item {\tt btl\_openib\_rq\_1\_size}: 65536 $->$ 262144 (increment * 2)
+\item {\tt btl\_openib\_rq\_1\_num}: 1 $->$ 256 (increment * 2)
+\item {\tt btl\_openib\_rq\_1\_low\_wat}: 1 $->$ 64 (increment * 2)
+\item {\tt btl\_openib\_rq\_2\_type}: S
+\item {\tt btl\_openib\_rq\_2\_size}: 65536 $->$ 262144 (increment * 2)
+\item {\tt btl\_openib\_rq\_2\_num}: 1 $->$ 256 (increment * 2)
+\item {\tt btl\_openib\_rq\_2\_low\_wat}: 1 $->$ 64 (increment * 2)
+\item {\tt btl\_openib\_rq\_2\_max\_pending\_sends}: 1 $->$ 32 (increment * 2)
+\item {\tt btl\_openib\_receive\_queues}: aggregate of the above parameters
+\end{itemize}
+
+The following configuration will yield 37730 combinations, after removing
+unnecessary combinations that would yield wrong or inaccurate results. The
+test was run on the shark cluster at the University of Houston. Shark consists
+of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4xInfiniBand and a
+Gigabit Ethernet network interconnect. We used the InfiniBand network
+interconnect for our measurements. The total time that the benchmark took was
+{\tt 6 hrs 32 min 11 sec}.
+
+\begin{table}[tb]
+\centering
+\begin{tabular}{|c|c|} \hline
+Latency & Number of Combinations \\
+\hline
+3.87us  & 1\\
+\hline
+3.88us  & 619\\
+\hline
+3.89us  & 9702\\
+\hline
+3.90us  & 10977\\
+\hline
+3.91us  & 7907\\
+\hline
+3.92us  & 5076\\
+\hline
+\end{tabular}  
+\caption{OTPO results of the best parameter combinations}
+\label{table:results} 
+\end{table}
+
+The results that are summarized in table ~\ref{table:results} shows the number
+of combinations that are in the range of 0.5 micro-seconds of the best
+latency. The best possible combination was with the follwoing values:
+$P,131072,64,4:S,262144,256,64,16$
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End: 
