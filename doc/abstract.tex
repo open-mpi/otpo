@@ -1,10 +1,1 @@
-In this paper, a new tool will be introduced. OTPO (Open Tool for Parameter
-Optimization) is the new tool donated to the Open MPI (Message Passing
-Interface) project. OTPO is an Open MPI specific tool that is meant to explore
-the MCA parameter space of Open MPI. The user would enter a file with a list
-of parameters and possible values, and the tool would output a number of
-combinations of the parameters' values that were found to be the best for a
-certain criteria (latency, bandwidth, etc...). The purpose of OTPO is to give the
-user an idea about the dependancy between the parameters themselves and an
-ideal space of parameter combinations. This paper will be a current status
-report on the work that have been done on OTPO.
+The constant increase of complexity of clustered high performance computing environments entails resource-intensive tuning to exploit the capabilities of the given hardware and software environment. In this paper, we introduce OTPO (Open Tool for Parameter Optimization), a new tool for optimizing Open MPI runtime parameters. Based on an application benchmark, the tool will test all viable combinations of Open MPI parameters provided in a user-specified input file and return the parameter sets leading to the best overall performance. This paper presents implementation details, the current status of the tool as well as an example optimizing the InfiniBand parameters of Open MPI in order to minimize the communication latency.
