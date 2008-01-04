@@ -3,6 +3,7 @@ evaluated. The parameter {\tt btl\_openib\_recieve\_queues} will be
 evaluated. We saw that this parameter is a combination of several recieve
 queue, where each queue in turn takes other parameters. 
 
+\subsection{Configuration File and Results}
 For OTPO to handle this kind of parameter, this parameter should be specified
 as an aggregate of other virtual parameters. In our test, we decided to use
 two recieve queues, one Per-peer queue and one shared receive queue. The
@@ -52,9 +53,28 @@ Latency & Number of Combinations \\
 \end{table}
 
 The results that are summarized in table ~\ref{table:results} shows the number
-of combinations that are in the range of 0.5 micro-seconds of the best
+of combinations that are in the range of 0.05 micro-seconds of the best
 latency. The best possible combination was with the follwoing values:
 $P,131072,64,4:S,262144,256,64,16$
+This value for the parameter was the best value between the other values,
+however the other values can't be discarded as bad. In the results, it can be
+said that most of the parameter combinations that were tested are good
+results. 
+
+\subsection{Future Work}
+OTPO is a pretty new project. There are lots of enhancements and additional
+functionalities that can be added:
+\begin{itemize}
+\item Adding more benchmarks for the user to choose from (AMB, OSU...)
+\item Adding more criteria to base the results on (bandwidth, memory,
+  collectives...)
+\item Implement a result gathering tool, that takes the results file, and
+  presents it to the user in a more readable and interpretable manner.
+\item Using methods of sampling to reduce the space of values that need to be
+  tested and reduce the number of end results due to the fact that those
+  numbers can be huge for any tool to interpret and ofcourse for the user to
+  just look at.
+\end{itemize}
 
 %%% Local Variables: 
 %%% mode: latex
