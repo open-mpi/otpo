@@ -42,11 +42,26 @@ Latency & Number of Combinations \\
 The results that are summarized in table ~\ref{table:results} shows the number
 of combinations that are in the range of 0.05 micro-seconds of the best
 latency. The best possible combination was with the following combination of values:
-$P,131072,64,4:S,262144,256,64,16$
-
-TODO: Mohamad, can you please explain the values? TODO END
-
-
+$P,131072,64,4:S,262144,256,64,16$\\
+The results suggest the best attributes for the two queue pairs:\\
+Per-peer queue:
+\begin{itemize}
+\item The size of the receive buffers to be posted is 131072 Bytes.
+\item The maximum number of buffers posted for incoming message fragments is
+  64.
+\item the number of available buffers left on the queue, before Open MPI
+  reposts buffers up to the maximum (previous parameter), is four.
+\end{itemize}
+Shared Receive Queue:
+\begin{itemize}
+\item The size of the receive buffers to be posted is 262144 Bytes.
+\item The maximum number of buffers posted for incoming message fragments is
+  256.
+\item the number of available buffers left on the queue, before Open MPI
+  reposts buffers up to the maximum (previous parameter), is 64.
+\item the maximum number of outstanding sends that are allowed at a given time
+  is 16.
+\end{itemize}
 
 %%% Local Variables: 
 %%% mode: latex
