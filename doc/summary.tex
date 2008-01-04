@@ -1,13 +1,9 @@
-OTPO is a pretty new project. There are lots of enhancements and additional
-functionalities that can be added:
-\begin{itemize}
-\item Adding more benchmarks for the user to choose from (AMB, OSU...)
-\item Adding more criteria to base the results on (bandwidth, memory,
-  collectives...)
-\item Implement a result gathering tool, that takes the results file, and
-  presents it to the user in a more readable and interpretable manner.
-\item Using methods of sampling to reduce the space of values that need to be
-  tested and reduce the number of end results due to the fact that those
-  numbers can be huge for any tool to interpret and of course for the user to
-  just look at.
-\end{itemize}
+In this paper we presented OTPO, a tool for optimizing Open MPI runtime parameters. 
+The tool gives interested end-users and system administrators the possibility to 'personalize' their Open MPI installation. OTPO has been successfully used to optimize the network parameters of the InfiniBand module of Open MPI in order to minimize the communication latency.
+
+The currently ongoing work on OTPO includes multiple areas. As of today, OTPO only supports NetPipe as the application benchmark. However, we plan to add more benchmarks to be used with OTPO such as IMB and OSU benchmarks, or the SKaMPI benchmark in order to optimize collective modules. Some of the benchmarks will also require OTPO to support additional optimization metrics, such as bandwidth or memory usage. The foremost goal however is to develop a  result gathering tool, that takes the results file produces by OTPO, and presents it to the user in a more readable and interpretable manner. 
+%\item Using methods of sampling to reduce the space of values that need to be
+%  tested and reduce the number of end results due to the fact that those
+%  numbers can be huge for any tool to interpret and of course for the user to
+%  just look at.
+%\end{itemize}
