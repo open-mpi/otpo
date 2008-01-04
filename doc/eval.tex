@@ -1,13 +1,6 @@
-In this section, an MCA parameter that we mentioned in section two will be
-evaluated. The parameter {\tt btl\_openib\_recieve\_queues} will be
-evaluated. We saw that this parameter is a combination of several recieve
-queue, where each queue in turn takes other parameters. 
+This section presents an example of using OTPO in order to optimize the InfiniBand parameters of Open MPI on a given platform. The test was run on the shark cluster at the University of Houston. Shark consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4xInfiniBand and a Gigabit Ethernet network interconnect.
 
-\subsection{Configuration File and Results}
-For OTPO to handle this kind of parameter, this parameter should be specified
-as an aggregate of other virtual parameters. In our test, we decided to use
-two recieve queues, one Per-peer queue and one shared receive queue. The
-following specification was used for the MCA parameter:
+The MCA parameters used for the evaluation is a subset of the parameters mentioned in section~\ref{sec:motivation}, namely {\tt btl\_openib\_receive\_queues}. As discussed in section~\ref{sec:motivation}, this parameter is a combination of several receive queues, where each queue in turn takes other parameters. In order for OTPO to handle this parameter, it has to be specified as an aggregate of other virtual parameters. In our test, we decided to use two receive queues, one Per-peer queue and one shared receive queue. The following specification was used for the MCA parameter:
 
 \begin{itemize}
 \item {\tt btl\_openib\_rq\_1\_type}: P
@@ -22,13 +15,7 @@ following specification was used for the MCA parameter:
 \item {\tt btl\_openib\_receive\_queues}: aggregate of the above parameters
 \end{itemize}
 
-The following configuration will yield 37730 combinations, after removing
-unnecessary combinations that would yield wrong or inaccurate results. The
-test was run on the shark cluster at the University of Houston. Shark consists
-of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4xInfiniBand and a
-Gigabit Ethernet network interconnect. We used the InfiniBand network
-interconnect for our measurements. The total time that the benchmark took was
-{\tt 6 hrs 32 min 11 sec}.
+This configuration yields 37730 combinations, after removing unnecessary combinations that would lead to wrong or inaccurate results.  The total time that the benchmark took was {\tt 6 hrs 32 min 11 sec}.
 
 \begin{table}[tb]
 \centering
@@ -54,27 +41,12 @@ Latency & Number of Combinations \\
 
 The results that are summarized in table ~\ref{table:results} shows the number
 of combinations that are in the range of 0.05 micro-seconds of the best
-latency. The best possible combination was with the follwoing values:
+latency. The best possible combination was with the following combination of values:
 $P,131072,64,4:S,262144,256,64,16$
-This value for the parameter was the best value between the other values,
-however the other values can't be discarded as bad. In the results, it can be
-said that most of the parameter combinations that were tested are good
-results. 
 
-\subsection{Future Work}
-OTPO is a pretty new project. There are lots of enhancements and additional
-functionalities that can be added:
-\begin{itemize}
-\item Adding more benchmarks for the user to choose from (AMB, OSU...)
-\item Adding more criteria to base the results on (bandwidth, memory,
-  collectives...)
-\item Implement a result gathering tool, that takes the results file, and
-  presents it to the user in a more readable and interpretable manner.
-\item Using methods of sampling to reduce the space of values that need to be
-  tested and reduce the number of end results due to the fact that those
-  numbers can be huge for any tool to interpret and ofcourse for the user to
-  just look at.
-\end{itemize}
+TODO: Mohamad, can you please explain the values? TODO END
+
+
 
 %%% Local Variables: 
 %%% mode: latex
