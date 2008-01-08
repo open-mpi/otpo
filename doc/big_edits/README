@@ -1,0 +1,103 @@
+What is OTPO?
+OTPO (Open Tool for Parameter Optimizations) is an Open MPI specific tool that is meant to explore the MCA parameter space. In Open MPI, the user can specify at runtime many values for MCA parameters (ompi_info –param all all). The parameters include the OpenIB BTL parameters (ompi_info –param btl openib). OTPO is a tool that takes in a list of any MCA parameters, with a user specified range of values for those parameters, and for every combination of the MCA parameter values, OTPO executes an MPI job, measuring latency (the only measurement available right now), bandwidth, etc… The tests used for the measurements are modular. Right now, only Netpipe test is available. OTPO outputs a list of the best parameter combinations for a certain test. 
+
+The main purpose of OTPO is to explore the effect of the MCA parameters on different machines with different architectures and configurations, and explore the dependencies between the MCA parameters themselves. OTPO is meant to run on the head node of a cluster, and it forks MPI jobs after exporting the current combination of MCA parameters on the nodes.
+
+OTPO is built on top of ADCL [1] (Abstract Data and Communication Library). ADCL is an application level communication library aiming at providing the highest possible performance for application level communication operations in a given execution environment. OTPO uses ADCL to provide the runtime selection logic and choosing the best combination of parameters.
+
+How to build OTPO?
+./autogen.sh
+./configure (this will configure OTPO with the included ADCL)
+make
+
+How to run OTPO?
+OTPO includes an ADCL copy, but if the user has another ADCL copy on his machine, he/she can set the ADCL directory on configure. 
+The first the user needs to specify is the file containing the parameters. Basically the file contains the name of the parameter and the following options for each parameter:
+-d default value
+-p {possible_values}: option for the user to explicitly list the possible values for the parameter
+-r start_value end_value: specify the start and end value for the parameter
+-t traversal_method arguments: The method to traverse the range of variables for the parameter. increment method is only available now, which takes arguments the operation and the operator.
+-i “rpn”: RPN condition that the parameter combinations must satisfy.
+
+
+
+
+After specifying the list of parameters, the user is ready to run OTPO. The usage options for running OTPO are:
+-p InputFileName (file that contains the parameters) *
+-d (debug output)
+-v (verbose output)
+-s (status output)
+-n (silent/no output)
+-t test (name of test, Current supported: Netpipe)
+-w test_path (path to the test on your system) *
+-l message_length (default is 1 byte)
+-h hostfile
+-m mca_params (mca parameters that you want your mpirun to run with)
+-f format (format of output, TXT)
+-o output_dir (directory where the results will be placed, default: results)
+-b interrupt_file (file to write data to when interrupted, default: interrupt.txt)
+-r interrupt_file (the file where contains the data to resume execution) 
+
+Options that are marked with * are required for OTPO to run. 
+
+What are the results?
+The results are placed in a sub-directory. Every single run of OTPO produces a file with a time stamp that contains the best attribute combinations. It gives the best combination around the best value that it found. These results files produced by OTPO are meant to be intermediate results to an analysis tool in OTPO that takes in any number of result files, does some sort of analysis, and gives the final analysis to the user. The analysis option in OTPO is still under development and research.
+
+OTPO and ADCL:
+We mentioned earlier that OTPO is built on top of ADCL. We have to note that ADCL is an MPI application, but we are not interested in the parts of ADCL where MPI is needed. So we created a dummy MPI library within ADCL that the user can use instead of the real MPI library (option set on configure). The other reason for the dummy MPI library is the fact that MPI and fork cause badness in the application. Another options in ADCL that need to be set on configure are the user level timings and number of tests. In short, if the user is using his own ADCL version, he must have the following configure options:
+--enable-printf-tofile 
+--with-num-tests=1 
+--enable-userlevel-timings 
+--enable-dummy-mpi 
+
+
+
+
+How is OTPO implemented?
+In OTPO we have a global structure array that contains all the parameters and their characteristics. Here are the attributes of each parameter in the general structure:
+    char *name; /* name of the parameter */
+    char *string_values[MAX_VALUES]; /* possible values in strings */
+    char *default_value; /* default value for the parameter */
+    int     *possible_values; /* possible values for the parameter */
+    int     num_values; /* number of values possible for that parameter */
+    int      start_value; /* start value (in case of range) */
+    int      end_value; /* end value (in case of range) */
+    enum otpo_traverse_method  traverse; /* traversal method of the possible attribute values (in case of range) */
+    enum otpo_operator  operation; /* operation on how to apply the increment */
+    char condition[CONDITION_LENGTH]; /* rpn condition that the parameter has to satisfy */
+    otpo_rpn_stack_element rpn_elements[RPN_MAX_ELEMENTS]; /* stack that holds all the rpn elements */
+    int  num_rpn_elements;
+    unsigned int  otpo_flags; /* virtual - aggregate etc. */
+    /* The following is a union with one variable, because later, other traversal methods might be added */
+    union traverse_attr_t /* attributes to the traversal method */
+    {
+        int increment;
+    }traverse_attr;
+
+The first step is to parse the input file and populate this array of parameters. 
+
+Next we need to create the ADCL objects (details of each object are specified in the ADCL documentation):
+- ADCL_Attribute [num_parameters]: abstraction for the characterstics of an attribute
+- ADCL_Attrset: A group of ADCL attributes
+- ADCL_Function [num_combinations]: equivalent to a combination of attribute values
+- ADCL_Fnctset: Group of functions
+- ADCL_Request: a handle to start each test and update the results
+
+Creating the ADCL_Function requires us to attach the function pointer to the test function that we want. In our case all the function pointers are the same, and point to the function where we get the current combination and execute the test.
+When the ADCL_Request is created, we execute ADCL_Request_start for the number of combinations that we have. Basically this calls the test function that is associated with the functions (combinations).
+
+The test function in OTPO does the following:
+-	Fork
+-	Child:
+o	asks ADCL to return the attributes and the values for the current combination
+o	exports the environment variables for each attribute
+o	exec mpirun with the specified test path at runtime
+-	Parent:
+o	waits for the child to complete
+o	if more than TIMEOUT pass, it will terminate the child and updates ADCL with a “bad values”, i.e. large value for latency.
+o	when child completes, it gathers the results (reads from np.out in case of Netpipe) and updates the ADCL request.
+
+Finally OTPO writes the results to a file with a time stamp.
+
+More work?
+OTPO still misses the analysis portion. It generates the results, but those results need to be interpreted and given to the user in a nicely formatted way. This is a challenge due to the fact that the result files may be very large, and may not have the same attributes.
