@@ -39,20 +39,23 @@ ADCL objects are used by OTPO:
 
 \begin{itemize}
 \item {\tt ADCL\_\-Attribute:} an abstraction for a particular
-  characteristic of a function. Each attribute is represented by the set of 
-  possible values for this characteristic. In OTPO, a separate {\tt ADCL\_\-Attribute}
-  objects is created for each MCA parameter and its possible  values.
-\item {\tt ADCL\_\-Attrset:} a set of ADCL attributes. Thus, an 
-  attribute set is the structure holding all MCA parameters provided by the user in the input
-  and file and their possible values.
+  characteristic of a function. Each attribute is represented by the
+  set of possible values for this characteristic. In OTPO, a separate
+  {\tt ADCL\_\-Attribute} objects is created for each MCA parameter
+  and its possible values.
+\item {\tt ADCL\_\-Attrset:} a set of ADCL attributes. Thus, an
+  attribute set is the structure holding all MCA parameters provided
+  by the user in the input and file and their possible values.
 \item {\tt ADCL\_\-Function:} equivalent to an actual implementation
-  of a particular communication pattern. In OTPO, an {\tt ADCL\_\-Function} is an
-  object that holds one possible combination of MCA parameter values.
-\item {\tt ADCL\_\-Fnctset:} is a set of ADCL functions providing the same
-	functionality. An {\tt ADCL\_\-Fnctset} can have an {\tt ADCL\_\-Attrset} attached to it. 
-\item {\tt ADCL\_\-Request:} a user level handle combining all required information to initiate a 
-	communication by starting a request. We will detail the usage of this object in OTPO  
-  below.
+  of a particular communication pattern. In OTPO, an {\tt
+    ADCL\_\-Function} is an object that holds one possible combination
+  of MCA parameter values.
+\item {\tt ADCL\_\-Fnctset:} is a set of ADCL functions providing the
+  same functionality. An {\tt ADCL\_\-Fnctset} can have an {\tt
+    ADCL\_\-Attrset} attached to it.
+\item {\tt ADCL\_\-Request:} a user level handle combining all
+  required information to initiate a communication by starting a
+  request. We will detail the usage of this object in OTPO below.
 \end{itemize}
 
 ADCL currently provides two different runtime selection algorithms: a
@@ -90,24 +93,33 @@ implemented.
 
 \subsection{OTPO Parameter File and Runtime Options}
 
-The OTPO parameter file describes the MCA parameters and potential values to be tested. In order to provide a maximum flexibility to the end-user, the parameters can be described by various options, e.g. depending on whether a parameter can have continues values, certain discrete values, or whether the value consists of different strings. Each line in the parameter file specifies a single parameter by giving the name of the parameter and some options, the options being one of the following:
+The OTPO parameter file describes the MCA parameters and potential
+values to be tested. In order to provide a maximum flexibility to the
+end-user, the parameters can be described by various options,
+e.g. depending on whether a parameter can have continues values,
+certain discrete values, or whether the value consists of different
+strings. Each line in the parameter file specifies a single parameter
+by giving the name of the parameter and some options, the options
+being one of the following:
 \begin{itemize}
-\item {\tt d default\_\-value}: specifies a default value for this parameter.
-\item {\tt p <list of possible values>}: explicitly specify the list of possible
-  values for the parameter.
-\item {\tt r start\_\-value end\_\-value}: specify the start and end value for the
+\item {\tt d default\_\-value}: specifies a default value for this
   parameter.
-\item {\tt t traversal\_\-method <arguments>}: specifies the method to traverse the range of
-  variables for the parameter. The first version of OTPO only includes
-  one method: ``increment,''
-  which takes the operator and the operand as arguments.
-\item {\tt i rpn\_\-expression}: RPN (reverse polish notation) condition that the parameter
-  combinations must satisfy.
-\item {\tt v}: specifies if the parameter is virtual, which means that it will not be
-  set as an environment variable, but will be part of another parameter.
-\item {\tt a format\_\-string}: specifies that the parameter is an aggregate of
-  other parameters in a certain format. Each sub parameter is surrounded by
-  dollar signs (\$) in the format string.
+\item {\tt p <list of possible values>}: explicitly specify the list
+  of possible values for the parameter.
+\item {\tt r start\_\-value end\_\-value}: specify the start and end
+  value for the parameter.
+\item {\tt t traversal\_\-method <arguments>}: specifies the method to
+  traverse the range of variables for the parameter. The first version
+  of OTPO only includes one method: ``increment,'' which takes the
+  operator and the operand as arguments.
+\item {\tt i rpn\_\-expression}: RPN (reverse polish notation)
+  condition that the parameter combinations must satisfy.
+\item {\tt v}: specifies if the parameter is virtual, which means that
+  it will not be set as an environment variable, but will be part of
+  another parameter.
+\item {\tt a format\_\-string}: specifies that the parameter is an
+  aggregate of other parameters in a certain format. Each sub
+  parameter is surrounded by dollar signs (\$) in the format string.
 \end{itemize}
 
 After the user creates the input file, OTPO can be run using one of the following options:
@@ -118,56 +130,75 @@ After the user creates the input file, OTPO can be run using one of the followin
 \item {\tt s}: enable periodic progress status messages.
 \item {\tt n}: silent; disable all output.
 \item {\tt t test}: name of test to use (currently, only ``Netpipe'').
-\item {\tt w test\_\-path}: path to the test executable on your system.
-\item {\tt l message\_\-length} length of messages to test (default is 1 byte).
+\item {\tt w test\_\-path}: path to the test executable on your
+  system.
+\item {\tt l message\_\-length} length of messages to test (default is
+  1 byte).
 \item {\tt h hostfile}: hostfile to use with {\tt mpirun}.
-\item {\tt m mca\_\-params} Additional MCA parameters to pass to {\tt mpirun}.
+\item {\tt m mca\_\-params} Additional MCA parameters to pass to {\tt
+    mpirun}.
 \item {\tt f format}: format of the output (currently, only ``text'').
-\item {\tt o output\_\-dir}: directory where the results will be placed (default: results).
-\item {\tt b interrupt\_\-file}: file to write data to when interrupted (default:
-  interrupt.txt).
+\item {\tt o output\_\-dir}: directory where the results will be
+  placed (default: results).
+\item {\tt b interrupt\_\-file}: file to write data to when
+  interrupted (default: interrupt.txt).
 \item {\tt r interrupt\_\-file}: read from a previously-written
   ``interrupted'' data file; execution will resume where it left off.
 \end{itemize}
 
 \subsection{Interaction Between OTPO, ADCL and the MPI Library}
 
-We now detail the sequence of events for an OTPO execution including how OTPO utilizes the ADCL library and executes the MPI application. OTPO parses the input file using simple string tokenizing techniques and creates a
-global structure that holds all the parameters and their options. This
-structure will be used to generate the ADCL objects. 
+We now detail the sequence of events for an OTPO execution including
+how OTPO utilizes the ADCL library and executes the MPI
+application. OTPO parses the input file using simple string tokenizing
+techniques and creates a global structure that holds all the
+parameters and their options. This structure will be used to generate
+the ADCL objects.
 
-An array of ADCL attributes with size equals to the number of the parameters
-is allocated. Each attribute is created by generating all the possible values
-corresponding to that attribute, using the global structure. Then an attribute
-set is created from the array of attributes. The next step is to create an
-ADCL function object for each possible combination which satisfies all the RPNs specified in
-the parameter file. The array of function objects is then used to create the ADCL function set. 
-Finally, an ADCL request object is created to start the measurements.
+An array of ADCL attributes with size equals to the number of the
+parameters is allocated. Each attribute is created by generating all
+the possible values corresponding to that attribute, using the global
+structure. Then an attribute set is created from the array of
+attributes. The next step is to create an ADCL function object for
+each possible combination which satisfies all the RPNs specified in
+the parameter file. The array of function objects is then used to
+create the ADCL function set.  Finally, an ADCL request object is
+created to start the measurements.
 
-Once the ADCL request object is created, the request is ``started'' for the given number of parameter value combinations.
-Starting the request is equivalent to calling a function registered with the according {\tt ADCL\_\-Fnctset}. The function registered by OTPO performs the following actions:
+Once the ADCL request object is created, the request is ``started''
+for the given number of parameter value combinations.  Starting the
+request is equivalent to calling a function registered with the
+according {\tt ADCL\_\-Fnctset}. The function registered by OTPO
+performs the following actions:
 \begin{itemize}
 \item Fork a child process
-\item The child process sets the parameters in the environment that need to be provided to the {\tt mpirun}
-  command, such as the number of processes, MCA parameters and values, and the application/benchmark to run.
+\item The child process sets the parameters in the environment that
+  need to be provided to the {\tt mpirun} command, such as the number
+  of processes, MCA parameters and values, and the
+  application/benchmark to run.
 %\item The child then gets the current function object of the request with a
 %  value for each parameter.
 %\item The child exports the parameter values to the environment.
-\item Finally the child launches {\tt mpirun} with the argument
-  set.
-\item The parent process waits for the child to complete, and then checks if the test was successful (e.g., {\tt mpirun} completed with an exit status of 0).
-\item If the child succeeded, the parent will update the current request with
-  the value (e.g., latency) that the child measured for the current parameter values.
-\item If the child does not complete within a specified timeout, the parent process kills it, and
-  updates the request with an invalid value.
+\item Finally the child launches {\tt mpirun} with the argument set.
+\item The parent process waits for the child to complete, and then
+  checks if the test was successful (e.g., {\tt mpirun} completed with
+  an exit status of 0).
+\item If the child succeeded, the parent will update the current
+  request with the value (e.g., latency) that the child measured for
+  the current parameter values.
+\item If the child does not complete within a specified timeout, the
+  parent process kills it, and updates the request with an invalid
+  value.
 \end{itemize}
 
-When measurements for all combinations of parameter values have been updated to the ADCL request object, 
-OTPO gathers the results and saves them to a file. Each run of OTPO produces a
-file with a time stamp that contains the best attribute combinations. The
-result file contains the set of best measured values, the number of combinations that
-produced these values, and the parameter value combinations themselves. The result file might be large,
-having thousands of different parameter combinations. 
+When measurements for all combinations of parameter values have been
+updated to the ADCL request object, OTPO gathers the results and saves
+them to a file. Each run of OTPO produces a file with a time stamp
+that contains the best attribute combinations. The result file
+contains the set of best measured values, the number of combinations
+that produced these values, and the parameter value combinations
+themselves. The result file might be large, having thousands of
+different parameter combinations.
 
 These results files produced by the first version of OTPO are intented
 to be intermediate results.  Work is ongoing to research and design a

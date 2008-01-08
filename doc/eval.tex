@@ -1,4 +1,11 @@
-This section presents an example of using OTPO in order to optimize the InfiniBand parameters of Open MPI on a given platform. The test was run on the shark cluster at the University of Houston. Shark consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4x InfiniBand and a Gigabit Ethernet network interconnect.
+{\Large JMS: This section needs a lot of work; it does not make sense if
+  you don't know anything about IB or Open MPI}
+
+This section presents an example of using OTPO in order to optimize
+the InfiniBand parameters of Open MPI on a given platform. The test
+was run on the shark cluster at the University of Houston. Shark
+consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4x
+InfiniBand and a Gigabit Ethernet network interconnect.
 
 The MCA parameters used for the evaluation is a subset of the
 parameters mentioned in section~\ref{sec:motivation}, namely {\tt
@@ -12,15 +19,23 @@ queue. The following specification was used for the MCA parameter:
 
 \begin{itemize}
 \item {\tt btl\_openib\_rq\_1\_type}: P
-\item {\tt btl\_openib\_rq\_1\_size}: 65536 $\rightarrow$ 262144 (increment * 2)
-\item {\tt btl\_openib\_rq\_1\_num}: 1 $\rightarrow$ 256 (increment * 2)
-\item {\tt btl\_openib\_rq\_1\_low\_wat}: 1 $\rightarrow$ 64 (increment * 2)
+\item {\tt btl\_openib\_rq\_1\_size}: 65536 $\rightarrow$ 262144
+  (increment * 2)
+\item {\tt btl\_openib\_rq\_1\_num}: 1 $\rightarrow$ 256 (increment *
+  2)
+\item {\tt btl\_openib\_rq\_1\_low\_wat}: 1 $\rightarrow$ 64
+  (increment * 2)
 \item {\tt btl\_openib\_rq\_2\_type}: S
-\item {\tt btl\_openib\_rq\_2\_size}: 65536 $\rightarrow$ 262144 (increment * 2)
-\item {\tt btl\_openib\_rq\_2\_num}: 1 $\rightarrow$ 256 (increment * 2)
-\item {\tt btl\_openib\_rq\_2\_low\_wat}: 1 $\rightarrow$ 64 (increment * 2)
-\item {\tt btl\_openib\_rq\_2\_max\_pending\_sends}: 1 $\rightarrow$ 32 (increment * 2)
-\item {\tt btl\_openib\_receive\_queues}: aggregate of the above parameters
+\item {\tt btl\_openib\_rq\_2\_size}: 65536 $\rightarrow$ 262144
+  (increment * 2)
+\item {\tt btl\_openib\_rq\_2\_num}: 1 $\rightarrow$ 256 (increment *
+  2)
+\item {\tt btl\_openib\_rq\_2\_low\_wat}: 1 $\rightarrow$ 64
+  (increment * 2)
+\item {\tt btl\_openib\_rq\_2\_max\_pending\_sends}: 1 $\rightarrow$
+  32 (increment * 2)
+\item {\tt btl\_openib\_receive\_queues}: aggregate of the above
+  parameters
 \end{itemize}
 
 This configuration yields 37,730 combinations, after removing
@@ -50,28 +65,29 @@ Latency & Number of Combinations \\
 \label{table:results} 
 \end{table}
 
-The results that are summarized in Table~\ref{table:results} show the number
-of combinations that are in the range of 0.05$\mu s$ of the best
-latency. The best possible combination was with the following combination of values:
+The results that are summarized in Table~\ref{table:results} show the
+number of combinations that are in the range of 0.05$\mu s$ of the
+best latency. The best possible combination was with the following
+combination of values:
 $P,131072,64,4:S,262144,256,64,16$\\
 The results suggest the best attributes for the two queue pairs:\\
 Per-peer queue:
 \begin{itemize}
 \item The size of the receive buffers to be posted is 131,072 bytes.
-\item The maximum number of buffers posted for incoming message fragments is
-  64.
-\item the number of available buffers left on the queue before Open MPI
-  reposts buffers up to the maximum (previous parameter) is 4.
+\item The maximum number of buffers posted for incoming message
+  fragments is 64.
+\item the number of available buffers left on the queue before Open
+  MPI reposts buffers up to the maximum (previous parameter) is 4.
 \end{itemize}
 Shared Receive Queue:
 \begin{itemize}
 \item The size of the receive buffers to be posted is 262,144 bytes.
-\item The maximum number of buffers posted for incoming message fragments is
-  256.
-\item the number of available buffers left on the queue before Open MPI
-  reposts buffers up to the maximum (previous parameter) is 64.
-\item the maximum number of outstanding sends that are allowed at a given time
-  is 16.
+\item The maximum number of buffers posted for incoming message
+  fragments is 256.
+\item the number of available buffers left on the queue before Open
+  MPI reposts buffers up to the maximum (previous parameter) is 64.
+\item the maximum number of outstanding sends that are allowed at a
+  given time is 16.
 \end{itemize}
 
 %%% Local Variables: 
