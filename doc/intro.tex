@@ -1,22 +1,21 @@
-Open MPI\cite{gabriel:ompi} is an open source implementation of the
+Open MPI~\cite{gabriel:ompi} is an open source implementation of the
 MPI-1~\cite{mpi1} and MPI-2~\cite{mpi2} specifications. The code is
 developed and maintained by a consortium consisting of 14
-institutions\footnote{14 institutions are listed as members of the
-Open MPI consortium as of January 2008} from academia and
+institutions\footnote{As
+of January, 2008.} from academia and
 industry. The Open MPI design is centered around the Modular Component
 Architecture (MCA), which is the software layer providing management
 services for Open MPI frameworks. A framework is dedicated to a
-single task, such as providing collective operations (i.e. the COLL
+single task, such as providing collective operations (i.e., the COLL
 framework) or providing data transfer primitives for a particular
-network interconnect (i.e. the Byte Transfer Layer framework --
+network interconnect (i.e., the Byte Transfer Layer framework --
 BTL). Each framework will typically have multiple implementations
-available. As an example, there are different BTL modules available
-for TCP based networks, InfiniBand~\cite{ib}, Myrinet networks or
-shared memory. Upon demand, a framework will discover and use the most
-appropriate module.
+available in the form of modules (``plugins'') that can be loaded on-demand at run
+time.  For example, BTL modules include support for TCP, InfiniBand~\cite{ib},
+Myrinet~\cite{myrinet}, shared memory, and others.
 
 Among the management services provided by the MCA is the ability to
-accept run-time parameters from higher level abstractions (e.g. {\tt
+accept run-time parameters from higher level abstractions (e.g., {\tt
 mpirun}) and pass them down to the according frameworks. MCA runtime
 parameters give system administrators, end-users and developers the
 possibility to tune the performance of their applications and systems
@@ -40,14 +39,14 @@ tool aiming at optimizing the values for a user provided combination
 of MCA parameters. Several dependencies might exist between MCA
 parameters, some of them even unknown to module developers. OTPO aims
 at discovering those hidden dependencies and the effect they have on
-performance measured e.g. by the point-to-point latency or
+performance measured, such as the point-to-point latency or
 bandwidth. We present the current status of OTPO and the ongoing work.
 
 The rest of the paper is organized as follows: section~\ref{sec:mot}
-presents the parameters of the OpenIB data transfer module in order to further motivate the approach taken 
+presents the parameters of the InfiniBand BTL module (``{\tt openib}'') in order to further motivate the approach taken 
 in this project. Section~\ref{sec:impl} discusses some implementation
-details of OTPO. In section~\ref{sec:eval} we present an example for a
+details of OTPO. In section~\ref{sec:eval}, we present an example for a
 parameter optimization using OTPO focusing on MCA parameters from the
-InfiniBand BTL module. Finally, section~\ref{sec:summary} summarizes
+{\tt openib} BTL module. Finally, section~\ref{sec:summary} summarizes
 the paper and discusses ongoing work.
 
