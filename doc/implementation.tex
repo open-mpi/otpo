@@ -1,156 +1,14 @@
-OTPO reads a user-supplied file that contains all the MCA parameter
-names under test, as well as the ranges of values for each parameter.
-OTPO then executes an MPI benchmark job for all combinations of the
-parameter values. A metric provided by the benchmark, such as latency
-or wall-clock execution time, is returned to OTPO and used as the
-measure to determine which sets of MCA parameters lead to the best
-performance. After all the parameters have been tested, OTPO outputs a
-list of the parameter combinations that resulted in the best
-performance for that test.
+%OTPO reads a user-supplied file that contains all the MCA parameter
+%names under test, as well as the ranges of values for each parameter.
+%OTPO then executes an MPI benchmark job for all combinations of the
+%parameter values. A metric provided by the benchmark, such as latency
+%or wall-clock execution time, is returned to OTPO and used as the
+%measure to determine which sets of MCA parameters lead to the best
+%performance. After all the parameters have been tested, OTPO outputs a
+%list of the parameter combinations that resulted in the best
+%performance for that test.
 
-The initial version of OTPO only supports measuring network latency
-using the NetPIPE~\cite{netpipe} benchmark. However, OTPO is highly
-modular by design; it is straightforward to add and use other
-benchmarks.
-
-
-\subsection{ADCL}
-
-OTPO is built on top of the Abstract Data and Communications Library
-(ADCL,~\cite{ADCL}) for maintaining parameter values, choosing the
-next parameter combination to be tested, etc. In this section, we will
-detail the most relevant aspects of ADCL for OTPO as well as the
-interactions between OTPO, ADCL, and MPI.
-
-The ADCL is an adaptive communication library that aims to optimize a
-predefined set of application-level communication patterns such as
-N-dimensional neighborhood communication or shift operations for a
-given execution environment. The library provides for each
-communication pattern a large number of implementations and
-incorporates a runtime selection logic in order to choose the
-implementation leading to the highest performance of the application
-on the current platform. However, an application also has the
-possibility to register its own functions with ADCL and use the ADCL
-internal runtime selection logic to determine, which of the
-alternative implementations provided lead to the best overall
-performance. This mechanism has been used by OTPO for registering and
-maintaining the status of different MCA parameters. The following
-ADCL objects are used by OTPO:
-
-\begin{itemize}
-\item {\tt ADCL\_\-Attribute:} an abstraction for a particular
-  characteristic of a function. Each attribute is represented by the
-  set of possible values for this characteristic. In OTPO, a separate
-  {\tt ADCL\_\-Attribute} objects is created for each MCA parameter
-  and its possible values.
-\item {\tt ADCL\_\-Attrset:} a set of ADCL attributes. Thus, an
-  attribute set is the structure holding all MCA parameters provided
-  by the user in the input and file and their possible values.
-\item {\tt ADCL\_\-Function:} equivalent to an actual implementation
-  of a particular communication pattern. In OTPO, an {\tt
-    ADCL\_\-Function} is an object that holds one possible combination
-  of MCA parameter values.
-\item {\tt ADCL\_\-Fnctset:} is a set of ADCL functions providing the
-  same functionality. An {\tt ADCL\_\-Fnctset} can have an {\tt
-    ADCL\_\-Attrset} attached to it.
-\item {\tt ADCL\_\-Request:} a user level handle combining all
-  required information to initiate a communication by starting a
-  request. We will detail the usage of this object in OTPO below.
-\end{itemize}
-
-ADCL currently provides two different runtime selection algorithms: a
-{\it brute force search} which tests all available implementations,
-and a {\it heuristic search} which optimizes individual attributes
-used to characterize an implementation. The main disadvantage of the
-brute force search strategy is that even parameter value sets that are
-known to not provide optimized behavior will be (unnecessarily)
-tested, thereby potentially greatly increasing the overall required
-for testing. In order to reduce the execution time of the selection
-logic, the heuristic based approach tests attribute combinations by
-modifying only one attribute at a time. After all possible values for
-a single attribute have been tested and evaluated, the value for that
-attribute leading to the best performance is determined by the
-library. In the subsequent optimization of the next attribute, only
-the ``optimal'' values for the parameters optimized so far will be
-used. This approach can dramatically reduce the number of attribute
-combinations that are evaluated. However, it has the restricting
-assumption that different attributes used to characterize an
-implementation are not correlated. In order to overcome this
-limitation, further runtime selection algorithms are currently being
-implemented.
-
-%Although OTPO has been using mostly the brute force search strategy so far, one of the advantages of using ADCL within OTPO relies on the possibility to seamlessly switch the selection logic used underneath, which determined the next parameter combination to be tested.
-
-
-%ADCL is an add-on library to MPI, but as we stated earlier, OTPO will not be an MPI
-%application. OTPO will always be a single process application and will not use
-%any part of ADCL where MPI is needed. In order to achieve that, we created a
-%dummy-mpi library within ADCL that can be enabled on configure time. This dummy
-%library is just meant to be there to allow ADCL to compile without the real
-%MPI library. The dummy library basically defines MPI parameters to dummy
-%values and MPI functions to do nothing. Another reason for the dummy MPI
-%library is the fact that MPI and fork cause badness in the application.
-
-\subsection{OTPO Parameter File and Runtime Options}
-
-The OTPO parameter file describes the MCA parameters and potential
-values to be tested. In order to provide a maximum flexibility to the
-end-user, the parameters can be described by various options,
-e.g. depending on whether a parameter can have continues values,
-certain discrete values, or whether the value consists of different
-strings. Each line in the parameter file specifies a single parameter
-by giving the name of the parameter and some options, the options
-being one of the following:
-\begin{itemize}
-\item {\tt d default\_\-value}: specifies a default value for this
-  parameter.
-\item {\tt p <list of possible values>}: explicitly specify the list
-  of possible values for the parameter.
-\item {\tt r start\_\-value end\_\-value}: specify the start and end
-  value for the parameter.
-\item {\tt t traversal\_\-method <arguments>}: specifies the method to
-  traverse the range of variables for the parameter. The first version
-  of OTPO only includes one method: ``increment,'' which takes the
-  operator and the operand as arguments.
-\item {\tt i rpn\_\-expression}: RPN (reverse polish notation)
-  condition that the parameter combinations must satisfy.
-\item {\tt v}: specifies if the parameter is virtual, which means that
-  it will not be set as an environment variable, but will be part of
-  another parameter.
-\item {\tt a format\_\-string}: specifies that the parameter is an
-  aggregate of other parameters in a certain format. Each sub
-  parameter is surrounded by dollar signs (\$) in the format string.
-\end{itemize}
-
-After the user creates the input file, OTPO can be run using one of the following options:
-\begin{itemize}
-\item {\tt p InputFileName}: file specifying parameters and values to test.
-\item {\tt d}: enable debuging output.
-\item {\tt v}: enable verbose output.
-\item {\tt s}: enable periodic progress status messages.
-\item {\tt n}: silent; disable all output.
-\item {\tt t test}: name of test to use (currently, only ``Netpipe'').
-\item {\tt w test\_\-path}: path to the test executable on your
-  system.
-\item {\tt l message\_\-length} length of messages to test (default is
-  1 byte).
-\item {\tt h hostfile}: hostfile to use with {\tt mpirun}.
-\item {\tt m mca\_\-params} Additional MCA parameters to pass to {\tt
-    mpirun}.
-\item {\tt f format}: format of the output (currently, only ``text'').
-\item {\tt o output\_\-dir}: directory where the results will be
-  placed (default: results).
-\item {\tt b interrupt\_\-file}: file to write data to when
-  interrupted (default: interrupt.txt).
-\item {\tt r interrupt\_\-file}: read from a previously-written
-  ``interrupted'' data file; execution will resume where it left off.
-\end{itemize}
-
-\subsection{Interaction Between OTPO, ADCL and the MPI Library}
-
-We now detail the sequence of events for an OTPO execution including
-how OTPO utilizes the ADCL library and executes the MPI
-application. OTPO parses the input file using simple string tokenizing
+Upon start of an optimization run, OTPO parses the input file using simple string tokenizing
 techniques and creates a global structure that holds all the
 parameters and their options. This structure will be used to generate
 the ADCL objects.
@@ -203,6 +61,62 @@ different parameter combinations.
 These results files produced by the first version of OTPO are intented
 to be intermediate results.  Work is ongoing to research and design a
 tool that can present the results in an intuitive and visual manner.
+
+
+\subsection{OTPO Parameter File}
+
+The OTPO parameter file describes the MCA parameters and potential
+values to be tested. In order to provide a maximum flexibility to the
+end-user, the parameters can be described by various options,
+e.g. depending on whether a parameter can have continues values,
+certain discrete values, or whether the value consists of different
+strings. Each line in the parameter file specifies a single parameter
+by giving the name of the parameter and some options, the options
+being one of the following:
+\begin{itemize}
+\item {\tt d default\_\-value}: specifies a default value for this
+  parameter.
+\item {\tt p <list of possible values>}: explicitly specify the list
+  of possible values for the parameter.
+\item {\tt r start\_\-value end\_\-value}: specify the start and end
+  value for the parameter.
+\item {\tt t traversal\_\-method <arguments>}: specifies the method to
+  traverse the range of variables for the parameter. The first version
+  of OTPO only includes one method: ``increment,'' which takes the
+  operator and the operand as arguments.
+\item {\tt i rpn\_\-expression}: RPN (reverse polish notation)
+  condition that the parameter combinations must satisfy.
+\item {\tt v}: specifies if the parameter is virtual, which means that
+  it will not be set as an environment variable, but will be part of
+  another parameter.
+\item {\tt a format\_\-string}: specifies that the parameter is an
+  aggregate of other parameters in a certain format. Each sub
+  parameter is surrounded by dollar signs (\$) in the format string.
+\end{itemize}
+
+%After the user creates the input file, OTPO can be run using one of the following options:
+%\begin{itemize}
+%\item {\tt p InputFileName}: file specifying parameters and values to test.
+%\item {\tt d}: enable debuging output.
+%\item {\tt v}: enable verbose output.
+%\item {\tt s}: enable periodic progress status messages.
+%\item {\tt n}: silent; disable all output.
+%\item {\tt t test}: name of test to use (currently, only ``Netpipe'').
+%\item {\tt w test\_\-path}: path to the test executable on your
+%  system.
+%\item {\tt l message\_\-length} length of messages to test (default is
+%  1 byte).
+%\item {\tt h hostfile}: hostfile to use with {\tt mpirun}.
+%\item {\tt m mca\_\-params} Additional MCA parameters to pass to {\tt
+%    mpirun}.
+%\item {\tt f format}: format of the output (currently, only ``text'').
+%\item {\tt o output\_\-dir}: directory where the results will be
+%  placed (default: results).
+%\item {\tt b interrupt\_\-file}: file to write data to when
+%  interrupted (default: interrupt.txt).
+%\item {\tt r interrupt\_\-file}: read from a previously-written
+%  ``interrupted'' data file; execution will resume where it left off.
+%\end{itemize}
 
 %%% Local Variables: 
 %%% mode: latex

@@ -2,11 +2,16 @@
   you don't know anything about IB or Open MPI}
 
 This section presents an example of using OTPO in order to optimize
-the InfiniBand parameters of Open MPI on a given platform. The test
-was run on the shark cluster at the University of Houston. Shark
-consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4x
-InfiniBand and a Gigabit Ethernet network interconnect.
+the InfiniBand parameters of Open MPI on a given platform. Therefore, we first discuss the parameters of the {\tt openib} BTL module in Open MPI, than present the results of the optimization using OTPO.
 
+\subsection{InfiniBand parameters in Open MPI}
+%\label{sec:mot}
+\input{motivation}
+
+\subsection{Results}
+The test was run on the shark cluster at the University of Houston. Shark
+consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4x
+InfiniBand and a Gigabit Ethernet network interconnect. 
 The MCA parameters used for the evaluation is a subset of the
 parameters mentioned in section~\ref{sec:motivation}, namely {\tt
   btl\_openib\_receive\_queues}. As discussed in
