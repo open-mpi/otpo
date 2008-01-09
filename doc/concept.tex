@@ -31,7 +31,24 @@ parameter, some end-users and system administrators might explore the
 parameter space in order to find values leading to higher performance
 for a given application or machine.
 
-OTPO is a tool aiming at optimizing parameters of the runtime environment exposed through the MPI library to the end-user application. OTPO is based on a highly modular concept, giving end-user the possibility to provide or implement their own benchmark for exploring the parameter space. Depending on the purpose of the tuning procedure, most often only a subset of the runtime parameters of Open MPI will be tuned at a given time. As an example, users might choose to tune the networking parameters for a cluster, optimizing the collective operations in a subsequent run etc. Therefore, one of the goals of OTPO is to provide a flexible and user friendly possibility to input the set of parameters to be tuned. 
+OTPO is a tool aiming at optimizing parameters of the runtime environment
+exposed through the MPI library to the end-user application. OTPO is based on
+a highly modular concept, giving end-user the possibility to provide or
+implement their own benchmark for exploring the parameter space. Depending on
+the purpose of the tuning procedure, most often only a subset of the runtime
+parameters of Open MPI will be tuned at a given time. As an example, users
+might choose to tune the networking parameters for a cluster, optimizing the
+collective operations in a subsequent run etc. Therefore, one of the goals of
+OTPO is to provide a flexible and user friendly possibility to input the set
+of parameters to be tuned. 
+OTPO supports testing two general types of MCA parameters:
+
+\begin{enumerate}
+\item Single-value parameters: these parameters represent an
+  individual value, such as an integer.
+\item Multiple-value parameters: these parameters are composed of
+  one or more sub-parameters, each of which can vary.
+\end{enumerate}
 
 From a higher level perspective, the process of tuning runtime parameters is an empirical search in a given parameter space. Depending on the number of parameters, the number of possible values for each parameter, and dependencies among the parameters themselves, the tuning process can in fact be very time consuming and complex. A large number of software projects are dealing with parameter optimization. In order to avoid replicating work which has been done by other researchers OTPO is based on the ADCL adaptive library~\cite{ADCL}. In the following, we outline the concept of ADCL. 
 

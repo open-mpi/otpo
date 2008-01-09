@@ -13,12 +13,14 @@ OTPO.
 Tests were run on the Shark cluster at the University of Houston.
 Shark consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by
 4x InfiniBand and Gigabit Ethernet network interconnects.  
-
-{\Large need to list details on the IB switch and HCAs}
+The InfiniBand switch is connected to two HCAs on every node, of which one is
+active, with an {\tt active\_mtu} of 2048 and an {\tt active\_speed} of 2.5
+Gbps. OFED 1.1 is installed on the nodes. 
 
 A pre-release version of Open MPI v1.3 was used to generate these
-results, Subversion trunk revision {\Large need to cite the SVN r
-  number that was used}.
+results, Subversion trunk revision 16924. A nightly snapshot of the trunk was
+used, and configured with debug disabled. All the tests were run with
+{\tt MPI\_LEAVE\_PINNED} set to one.
 
 OTPO was used to explore the parameter space of {\tt
   btl\_\-openib\_\-receive\_\-queues} to find a set of values that
@@ -55,16 +57,14 @@ Max pending sends & 1 $\rightarrow$ 32 & & \yes \\
 
 Even with this coarse-grained sampling of the parameter space, the
 five-dimensional parameter space from
-Table~\ref{table:eval-queue-search-params} yields 37,730 valid
-combinations (after removing unnecessary combinations that would cause
-to incorrect results).  These combinations stressed buffer management
-and flow control issues in the Open MPI short message protocol when
-sending 1 byte messages.  {\Large Please confirm: this was testing 1
-  byte messages?  Or 0 byte messages?}  Using the brute force method,
-OTPO took over 6.5 hours to invoke NetPIPE for each of these parameter
-combinations.  Note that NetPIPE runs each 0-byte ping-pong test 1,000
-times and reports the half the average round-trip time.  OTPOT sought
-parameter sets that minimized this value.
+Table~\ref{table:eval-queue-search-params} yields 37,730 valid combinations
+(after removing unnecessary combinations that would cause to incorrect
+results). These combinations stressed buffer management and flow control
+issues in the Open MPI short message protocol when sending 1 byte
+messages. Using the brute force method, OTPO took over 6.5 hours to invoke
+NetPIPE for each of these parameter combinations.  Note that NetPIPE runs each
+0-byte ping-pong test 1,000 times and reports half the average round-trip
+time.  OTPO sought parameter sets that minimized this value.
 
 \begin{table}[tb]
 \centering
