@@ -1,55 +1,75 @@
-{\Large JMS: This section needs a lot of work; it does not make sense if
-  you don't know anything about IB or Open MPI}
+This section presents an example using OTPO to optimize some of the
+InfiniBand parameters of Open MPI on a given platform.  We therefore
+first describe Open MPI's InfiniBand support and some of its run-time
+tunable parameters, then present the results of the optimization using
+OTPO.
 
-This section presents an example of using OTPO in order to optimize
-the InfiniBand parameters of Open MPI on a given platform. Therefore, we first discuss the parameters of the {\tt openib} BTL module in Open MPI, than present the results of the optimization using OTPO.
+\subsection{InfiniBand Parameters in Open MPI}
 
-\subsection{InfiniBand parameters in Open MPI}
-%\label{sec:mot}
 \input{motivation}
 
 \subsection{Results}
-The test was run on the shark cluster at the University of Houston. Shark
-consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by a 4x
-InfiniBand and a Gigabit Ethernet network interconnect. 
-The MCA parameters used for the evaluation is a subset of the
-parameters mentioned in section~\ref{sec:motivation}, namely {\tt
-  btl\_openib\_receive\_queues}. As discussed in
-section~\ref{sec:motivation}, this parameter is the specification of
-one or more receive queues, each with several sub-parameters.  In
-order for OTPO to handle this parameter, it has to be specified as an
-aggregate of other ``virtual'' parameters. In our test, we decided to
-use two receive queues: one per-peer queue and one shared receive
-queue. The following specification was used for the MCA parameter:
 
-\begin{itemize}
-\item {\tt btl\_openib\_rq\_1\_type}: P
-\item {\tt btl\_openib\_rq\_1\_size}: 65536 $\rightarrow$ 262144
-  (increment * 2)
-\item {\tt btl\_openib\_rq\_1\_num}: 1 $\rightarrow$ 256 (increment *
-  2)
-\item {\tt btl\_openib\_rq\_1\_low\_wat}: 1 $\rightarrow$ 64
-  (increment * 2)
-\item {\tt btl\_openib\_rq\_2\_type}: S
-\item {\tt btl\_openib\_rq\_2\_size}: 65536 $\rightarrow$ 262144
-  (increment * 2)
-\item {\tt btl\_openib\_rq\_2\_num}: 1 $\rightarrow$ 256 (increment *
-  2)
-\item {\tt btl\_openib\_rq\_2\_low\_wat}: 1 $\rightarrow$ 64
-  (increment * 2)
-\item {\tt btl\_openib\_rq\_2\_max\_pending\_sends}: 1 $\rightarrow$
-  32 (increment * 2)
-\item {\tt btl\_openib\_receive\_queues}: aggregate of the above
-  parameters
-\end{itemize}
+Tests were run on the Shark cluster at the University of Houston.
+Shark consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by
+4x InfiniBand and Gigabit Ethernet network interconnects.  
 
-This configuration yields 37,730 combinations, after removing
-unnecessary combinations that would lead to wrong or inaccurate
-results.  Using the brute force method, OTPO took over 6.5 hours to
-test all of these combinations.
+{\Large need to list details on the IB switch and HCAs}
+
+A pre-release version of Open MPI v1.3 was used to generate these
+results, Subversion trunk revision {\Large need to cite the SVN r
+  number that was used}.
+
+OTPO was used to explore the parameter space of {\tt
+  btl\_\-openib\_\-receive\_\-queues} to find a set of values that
+yield the lowest short message latency.  Since {\tt receive\_\-queues}
+is a multiple-value parameter, each sub-parameter must be described to
+OTPO.  The individual sub-parameters become ``virtual'' parameters,
+each with a designated range to explore.  OTPO was configured to test
+both a per-peer and a shared receive queue with the ranges listed in
+Table~\ref{table:eval-queue-search-params}.  Each sub-parameter
+spanned its range by doubling its value from the minimum to the
+maximum (e.g., 1, 2, 4, 8, 16, ...).
+
+\def\yes{$\sqrt{}$}
 
 \begin{table}[tb]
 \centering
+\caption{InfiniBand receive queue search parameter ranges.  The ``max
+  pending sends'' sub-parameter is only relevant for shared receive
+  queues.}
+\label{table:eval-queue-search-params} 
+\begin{tabular}{|l|c|c|c|} 
+\multicolumn{1}{c}{Sub-parameter} &
+\multicolumn{1}{c}{Range} &
+\multicolumn{1}{c}{Per-peer} &
+\multicolumn{1}{c}{Shared} \\
+\hline
+Buffer size (bytes) & 65,536 $\rightarrow$ 262,144 & \yes & \yes \\
+Number of buffers & 1 $\rightarrow$ 256 & \yes & \yes \\
+Low watermark (buffers) & 1 $\rightarrow$ 64  & \yes & \yes \\
+Max pending sends & 1 $\rightarrow$ 32 & & \yes \\
+\hline
+\end{tabular}
+\end{table}
+
+Even with this coarse-grained sampling of the parameter space, the
+five-dimensional parameter space from
+Table~\ref{table:eval-queue-search-params} yields 37,730 valid
+combinations (after removing unnecessary combinations that would cause
+to incorrect results).  These combinations stressed buffer management
+and flow control issues in the Open MPI short message protocol when
+sending 1 byte messages.  {\Large Please confirm: this was testing 1
+  byte messages?  Or 0 byte messages?}  Using the brute force method,
+OTPO took over 6.5 hours to invoke NetPIPE for each of these parameter
+combinations.  Note that NetPIPE runs each 0-byte ping-pong test 1,000
+times and reports the half the average round-trip time.  OTPOT sought
+parameter sets that minimized this value.
+
+\begin{table}[tb]
+\centering
+\caption{OTPO results of the best parameter combinations.}
+\label{table:results} 
 \begin{tabular}{|c|c|} \hline
 Latency & Number of Combinations \\
 \hline
@@ -66,11 +86,30 @@ Latency & Number of Combinations \\
 3.92$\mu s$  & 5,076\\
 \hline
 \end{tabular}  
-\caption{OTPO results of the best parameter combinations}
-\label{table:results} 
 \end{table}
 
-The results that are summarized in Table~\ref{table:results} show the
+The results are summarized in Table~\ref{table:results}.  Although
+there was exactly one parameter set that resulted in the lowest
+latency ($3.87\mu s$), there were thousands that were within $0.05\mu
+s$.  With timings this low, jitter within the results is to be
+expected.  
+
+{\Large Mohamad: I'm confused as to what was actually run...}
+
+{\em Were you testing {\bf 2} receive queues?  I.e., ``P....:S....''?
+  The best possible param set listed below suggests this.  If so, why?
+  0 byte latency is not affected by the 2nd queue -- it will only use
+  the smallest message queue.  Were you testing more than just 0 byte
+  latency?  If so, what exactly were you testing?}
+
+{\Large I'm quite suspicious of the fact that there was only {\bf 1}
+  best result.  If you run the tests again, are the results
+  consistent?}
+
+{\em .....I cannot edit the following without answers to the above
+  questions...}
+
+ the
 number of combinations that are in the range of 0.05$\mu s$ of the
 best latency. The best possible combination was with the following
 combination of values:

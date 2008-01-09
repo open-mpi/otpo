@@ -1,5 +1,9 @@
 \label{sec:motivation}
 
+{\Large I think this sentence and the enumerated list belongs in the
+  concept section -- I cannot put it there because it is currently
+  missing from SVN...}
+
 OTPO supports testing two general types of MCA parameters:
 
 \begin{enumerate}
@@ -9,16 +13,22 @@ OTPO supports testing two general types of MCA parameters:
   one or more sub-parameters, each of which can vary.
 \end{enumerate}
 
-In this section, we will describe some of the tunable values of the
-version 1.3 series of Open MPI's {\tt openib} BTL module -- both
-single- and multiple-value -- and explain how OTPO can systematically
-search the parameter space.
+{\Large I assume that MCA parameters have been introduced already;
+  they are referenced in the Implementation section, but since the
+  concept section is missing, I don't know for sure...}
+
+Open MPI supports InfiniBand networks through a Byte Transfer Layer
+(BTL) plugin module named {\tt openib}.  BTL plugins are the lowest
+layer in the Open MPI point-to-point communication stack and are
+responsible for actually moving bytes from one MPI process to
+another.  The {\tt openib} BTL has both single- and multiple-value
+parameters that can be adjusted at run-time.
 
 Open MPI internally ranks network interconnects based on the best
-latency achievable by that network. Upon application startup, the MPI
+latency achievable by that network.  Upon application startup, the MPI
 library determines the list of available networks on each process and
-to each process.  As such, the same process might use multiple network
-interconnects for communication to different processes. The default
+to each process.  A single process may therefore use multiple network
+interconnects for communication to different processes.  The default
 behavior of Open MPI always chooses the network with the lowest
 latency for short messages.  The ``{\tt btl}'' MCA run-time parameter
 can be used to override this behavior and manually enforce the usage
@@ -48,7 +58,7 @@ The following are some of the {\tt openib} BTL's single-value
 parameters that are used to tune Open MPI's short message RDMA
 behavior:\footnote{Note that the exact definition and usage of these
   parameters are outside the scope of this paper; they are only
-  briefly described.}
+  briefly described here.}
 
 \begin{itemize}
 \item {\tt btl\_\-openib\_\-ib\_\-max\_\-rdma\_\-dst\_\-opts}: maximum
@@ -64,19 +74,20 @@ behavior:\footnote{Note that the exact definition and usage of these
   buffers to allocate for short messages.
 \end{itemize}
 
-MPI processes communication on InfiniBand networks by setting up a
-pair of queues to pass messages: one queue for sending and one queue
-for receiving.  InfiniBand queues have a large number of attributes
-and options that can be used to tailor the behavior of how messages
-are passed.  Starting with version v1.3, Open MPI exposes the receive
-queue parameters through the multiple-value parameter {\tt
-  btl\_\-openib\_\-receive\_\-queues}.  Specifically, this MCA
-parameter is used to specify one or more receive queues that will be
-setup in each MPI process for InfiniBand communication.  There are two
-types of receive queues, each of which have multiple
-sub-parameters:\footnote{As with the eager RDMA parameters, the {\tt
-    btl\_\-openib\_\-receive\_\-queues} MCA parameter is only loosely
-  described in this paper.}
+MPI processes communicate on InfiniBand networks by setting up a pair
+of queues to pass messages: one queue for sending and one queue for
+receiving.  InfiniBand queues have a large number of attributes and
+options that can be used to tailor the behavior of how messages are
+passed.  Starting with version v1.3, Open MPI exposes the receive
+queue parameters for short messages through the multiple-value
+parameter {\tt btl\_\-openib\_\-receive\_\-queues} (long messages use
+a different protocol and are governed by a different set of MCA
+parameters).  Specifically, this MCA parameter is used to specify one
+or more receive queues that will be setup in each MPI process for
+InfiniBand communication.  There are two types of receive queues, each
+of which have multiple sub-parameters:\footnote{As with the eager RDMA
+  MCA parameters, the {\tt btl\_\-openib\_\-receive\_\-queues} MCA
+  parameter is only briefly described in this paper.}
 
 \begin{enumerate}
 \item ``Per-peer'' receive queues are dedicated to receiving messages
@@ -87,10 +98,25 @@ sub-parameters:\footnote{As with the eager RDMA parameters, the {\tt
 
 \item ``Shared'' receive queues are shared between all MPI sending
   processes. Shared receive queues have the same mandatory
-  sub-parameters as per-peer receive queues, but have two optional
-  sub-parameters ({\em low\_\-watermark} and {\em
+  sub-parameters as per-peer receive queues, but have only two
+  optional sub-parameters ({\em low\_\-watermark} and {\em
     max\_\-pending\_\-sends}).
 \end{enumerate}
+
+The {\tt btl\_\-openib\_\-receive\_\-queues} value is a
+colon-delimited listed of queue specifications specifying the queue
+type (``P'' or ``S'') and a comma-delimited list of the mandatory and
+optional sub-parameters.  For example:
+
+\vspace{5pt}
+\centerline{\tt P,128,256,192,128:S,65535,256,128,32}
+\vspace{5pt}
+
+will instantiate one per-peer receive queue for each inbound MPI
+connection for messages that are $\le128$ bytes, and will setup a
+single shared receive queue for all messages that are $>128$ bytes and
+$\le65,535$ bytes (messages longer than 65,535 bytes will be handled
+by the long message protocol).
 
 %%% Local Variables: 
 %%% mode: latex
