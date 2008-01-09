@@ -1,0 +1,95 @@
+Open MPI~\cite{gabriel:ompi} is an open source implementation of the
+MPI-1~\cite{mpi1} and MPI-2~\cite{mpi2} specifications. The code is
+developed and maintained by a consortium consisting of 14
+institutions\footnote{As of January, 2008.} from academia and
+industry. The Open MPI design is centered around the Modular Component
+Architecture (MCA), which is the software layer providing management
+services for Open MPI frameworks. A framework is dedicated to a single
+task, such as providing collective operations (i.e., the COLL
+framework) or providing data transfer primitives for a particular
+network interconnect (i.e., the Byte Transfer Layer framework --
+BTL). Each framework will typically have multiple implementations
+available in the form of modules (``plugins'') that can be loaded
+on-demand at run time.  For example, BTL modules include support for
+TCP, InfiniBand~\cite{ib}, Myrinet, shared memory, and others.
+
+Among the management services provided by the MCA is the ability to
+accept run-time parameters from higher level abstractions (e.g., {\tt
+  mpirun}) and pass them down to the according frameworks. MCA runtime
+parameters give system administrators, end-users and developers the
+possibility to tune the performance of their applications and systems
+without having to recompile the MPI library. Examples for MCA runtime
+parameters include the values of cross-over points between different
+algorithms in a collective module, or modifying some network
+parameters such as internal buffer sizes in a BTL module. Due to its
+great flexibility, Open MPI developers made extensively use of MCA
+runtime parameters.  The current development version of Open MPI has
+multiple hundred MCA runtime parameters, depending on the set of
+modules compiled for a given platform. While average end-users clearly
+depend on developers setting reasonable default values for each
+parameter, some end-users and system administrators might explore the
+parameter space in order to find values leading to higher performance
+for a given application or machine.
+
+OTPO is a tool aiming at optimizing parameters of the runtime environment exposed through the MPI library to the end-user application. OTPO is based on a highly modular concept, giving end-user the possibility to provide or implement their own benchmark for exploring the parameter space. Depending on the purpose of the tuning procedure, most often only a subset of the runtime parameters of Open MPI will be tuned at a given time. As an example, users might choose to tune the networking parameters for a cluster, optimizing the collective operations in a subsequent run etc. Therefore, one of the goals of OTPO is to provide a flexible and user friendly possibility to input the set of parameters to be tuned. 
+
+From a higher level perspective, the process of tuning runtime parameters is an empirical search in a given parameter space. Depending on the number of parameters, the number of possible values for each parameter, and dependencies among the parameters themselves, the tuning process can in fact be very time consuming and complex. A large number of software projects are dealing with parameter optimization. In order to avoid replicating work which has been done by other researchers OTPO is based on the ADCL adaptive library~\cite{ADCL}. In the following, we outline the concept of ADCL. 
+
+\subsection{ADCL}
+
+The ADCL is an adaptive communication library that aims to optimize a
+predefined set of application-level communication patterns such as
+N-dimensional neighborhood communication or shift operations for a
+given execution environment. The library provides for each
+communication pattern a large number of implementations and
+incorporates a runtime selection logic in order to choose the
+implementation leading to the highest performance of the application
+on the current platform. However, an application also has the
+possibility to register its own functions with ADCL and use the ADCL
+internal runtime selection logic to determine, which of the
+alternative implementations provided lead to the best overall
+performance. This mechanism has been used by OTPO for registering and
+maintaining the status of different MCA parameters. The main 
+ADCL objects within the ADCL API are:
+
+\begin{itemize}
+\item {\tt ADCL\_\-Attribute:} an abstraction for a particular
+  characteristic of a function. Each attribute is represented by the
+  set of possible values for this characteristic. In OTPO, a separate
+  {\tt ADCL\_\-Attribute} objects is created for each MCA parameter
+  and its possible values.
+\item {\tt ADCL\_\-Attrset:} a set of ADCL attributes. Thus, an
+  attribute set is the structure holding all MCA parameters provided
+  by the user in the input and file and their possible values.
+\item {\tt ADCL\_\-Function:} equivalent to an actual implementation
+  of a particular communication pattern. In OTPO, an {\tt
+    ADCL\_\-Function} is an object that holds one possible combination
+  of MCA parameter values.
+\item {\tt ADCL\_\-Fnctset:} is a set of ADCL functions providing the
+  same functionality. An {\tt ADCL\_\-Fnctset} can have an {\tt
+    ADCL\_\-Attrset} attached to it.
+\item {\tt ADCL\_\-Request:} a user level handle combining all
+  required information to initiate a communication by starting a
+  request. We will detail the usage of this object in OTPO below.
+\end{itemize}
+
+ADCL currently provides two different runtime selection algorithms: a
+{\it brute force search} which tests all available implementations,
+and a {\it heuristic search} which optimizes individual attributes
+used to characterize an implementation. The main disadvantage of the
+brute force search strategy is that even parameter value sets that are
+known to not provide optimized behavior will be (unnecessarily)
+tested, thereby potentially greatly increasing the overall required
+time for testing. In order to reduce the execution time of the selection
+logic, the heuristic based approach tests attribute combinations by
+modifying only one attribute at a time. After all possible values for
+a single attribute have been tested and evaluated, the value for that
+attribute leading to the best performance is determined by the
+library. In the subsequent optimization of the next attribute, only
+the ``optimal'' values for the parameters optimized so far will be
+used. This approach can dramatically reduce the number of attribute
+combinations that are evaluated. However, it has the restricting
+assumption that different attributes used to characterize an
+implementation are not correlated. In order to overcome this
+limitation, further runtime selection algorithms are currently being
+implemented.
