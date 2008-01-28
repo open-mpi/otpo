@@ -37,7 +37,7 @@ maximum (e.g., 1, 2, 4, 8, 16, ...).
 
 \begin{table}[tb]
 \centering
-\caption{InfiniBand receive queue search parameter ranges.  The ``max
+\caption{InfiniBand receive queue search parameter ranges.The ``max
   pending sends'' sub-parameter is only relevant for shared receive
   queues.}
 \label{table:eval-queue-search-params} 
@@ -47,92 +47,84 @@ maximum (e.g., 1, 2, 4, 8, 16, ...).
 \multicolumn{1}{c}{Per-peer} &
 \multicolumn{1}{c}{Shared} \\
 \hline
-Buffer size (bytes) & 65,536 $\rightarrow$ 262,144 & \yes & \yes \\
-Number of buffers & 1 $\rightarrow$ 256 & \yes & \yes \\
-Low watermark (buffers) & 1 $\rightarrow$ 64  & \yes & \yes \\
+Buffer size (bytes) & 65,536 $\rightarrow$ 1,048,576 & \yes & \yes \\
+Number of buffers & 1 $\rightarrow$ 1024 & \yes & \yes \\
+Low watermark (buffers) & 32 $\rightarrow$ 512  & \yes & \yes \\
 Max pending sends & 1 $\rightarrow$ 32 & & \yes \\
 \hline
 \end{tabular}
 \end{table}
 
-Even with this coarse-grained sampling of the parameter space, the
-five-dimensional parameter space from
-Table~\ref{table:eval-queue-search-params} yields 37,730 valid combinations
-(after removing unnecessary combinations that would cause to incorrect
+The parameters that are used are explained as follows:\\
+\begin{itemize}
+\item The size of the receive buffers to be posted.
+\item The maximum number of buffers posted for incoming message fragments.
+\item the number of available buffers left on the queue before Open
+  MPI reposts buffers up to the maximum (previous parameter).
+\item the maximum number of outstanding sends that are allowed at a
+  given time (SRQ only).
+\end{itemize}
+
+The parameter space from Table~\ref{table:eval-queue-search-params} yields,
+275 for per-peer queue and 825 for shared queue, valid combinations (after
+removing unnecessary combinations that would cause to incorrect
 results). These combinations stressed buffer management and flow control
 issues in the Open MPI short message protocol when sending 1 byte
-messages. Using the brute force method, OTPO took over 6.5 hours to invoke
-NetPIPE for each of these parameter combinations.  Note that NetPIPE runs each
-0-byte ping-pong test 1,000 times and reports half the average round-trip
-time.  OTPO sought parameter sets that minimized this value.
+messages. Using the brute force method, OTPO took, 3 minutes for the first
+case and 9 minutes for the second case, to invoke NetPIPE for each of these
+parameter combinations.  Note that NetPIPE runs several ping-pong tests and
+reports half the average round-trip time.  OTPO sought parameter sets that
+minimized this value.
 
 \begin{table}[tb]
 \centering
-\caption{OTPO results of the best parameter combinations.}
-\label{table:results} 
+\caption{OTPO results of the best parameter combinations (PPQ).}
+\label{table:results-ppq} 
 \begin{tabular}{|c|c|} \hline
 Latency & Number of Combinations \\
 \hline
-3.87$\mu s$  & 1\\
+3.78$\mu s$  & 3\\
 \hline
-3.88$\mu s$  & 619\\
+3.79$\mu s$  & 3\\
 \hline
-3.89$\mu s$  & 9,702\\
+3.80$\mu s$  & 15\\
 \hline
-3.90$\mu s$  & 10,977\\
+3.81$\mu s$  & 21\\
 \hline
-3.91$\mu s$  & 7,907\\
+3.82$\mu s$  & 31\\
 \hline
-3.92$\mu s$  & 5,076\\
+3.83$\mu s$  & 34\\
 \hline
 \end{tabular}  
 \end{table}
 
-The results are summarized in Table~\ref{table:results}.  Although
-there was exactly one parameter set that resulted in the lowest
-latency ($3.87\mu s$), there were thousands that were within $0.05\mu
-s$.  With timings this low, jitter within the results is to be
-expected.  
+\begin{table}[tb]
+\centering
+\caption{OTPO results of the best parameter combinations (SRQ).}
+\label{table:results-srq} 
+\begin{tabular}{|c|c|} \hline
+Latency & Number of Combinations \\
+\hline
+3.77$\mu s$  & 1\\
+\hline
+3.78$\mu s$  & 4\\
+\hline
+3.79$\mu s$  & 18\\
+\hline
+3.80$\mu s$  & 32\\
+\hline
+3.81$\mu s$  & 69\\
+\hline
+3.82$\mu s$  & 69\\
+\hline
+\end{tabular}  
+\end{table}
 
-{\Large Mohamad: I'm confused as to what was actually run...}
-
-{\em Were you testing {\bf 2} receive queues?  I.e., ``P....:S....''?
-  The best possible param set listed below suggests this.  If so, why?
-  0 byte latency is not affected by the 2nd queue -- it will only use
-  the smallest message queue.  Were you testing more than just 0 byte
-  latency?  If so, what exactly were you testing?}
-
-{\Large I'm quite suspicious of the fact that there was only {\bf 1}
-  best result.  If you run the tests again, are the results
-  consistent?}
-
-{\em .....I cannot edit the following without answers to the above
-  questions...}
-
- the
-number of combinations that are in the range of 0.05$\mu s$ of the
-best latency. The best possible combination was with the following
-combination of values:
-$P,131072,64,4:S,262144,256,64,16$\\
-The results suggest the best attributes for the two queue pairs:\\
-Per-peer queue:
-\begin{itemize}
-\item The size of the receive buffers to be posted is 131,072 bytes.
-\item The maximum number of buffers posted for incoming message
-  fragments is 64.
-\item the number of available buffers left on the queue before Open
-  MPI reposts buffers up to the maximum (previous parameter) is 4.
-\end{itemize}
-Shared Receive Queue:
-\begin{itemize}
-\item The size of the receive buffers to be posted is 262,144 bytes.
-\item The maximum number of buffers posted for incoming message
-  fragments is 256.
-\item the number of available buffers left on the queue before Open
-  MPI reposts buffers up to the maximum (previous parameter) is 64.
-\item the maximum number of outstanding sends that are allowed at a
-  given time is 16.
-\end{itemize}
+The results are summarized in Table~\ref{table:results-ppq} and
+Table~\ref{table:results-srq}. Although there were few parameter sets that
+resulted in the lowest latency ($3.78\mu s$ and $3.77\mu s$), there were many
+others that were within $0.05\mu s$.  With timings this low, jitter within the
+results is to be expected.
 
 %%% Local Variables: 
 %%% mode: latex
