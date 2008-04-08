@@ -66,62 +66,41 @@ The parameters that are used are explained as follows:\\
 \end{itemize}
 
 The parameter space from Table~\ref{table:eval-queue-search-params} yields,
-275 for per-peer queue and 825 for shared queue, valid combinations (after
-removing unnecessary combinations that would cause to incorrect
+275 for per peer queue and 825 for shared queue valid combinations (after
+removing unnecessary combinations that would lead to incorrect
 results). These combinations stressed buffer management and flow control
 issues in the Open MPI short message protocol when sending 1 byte
-messages. Using the brute force method, OTPO took, 3 minutes for the first
-case and 9 minutes for the second case, to invoke NetPIPE for each of these
-parameter combinations.  Note that NetPIPE runs several ping-pong tests and
-reports half the average round-trip time.  OTPO sought parameter sets that
-minimized this value.
+messages. It took OTPO 3 minutes to evaluate the first
+case by invoking NetPIPE for each parameter combination and 9 minutes for the second case.  
+Note that NetPIPE runs several ping-pong tests and reports half the average round-trip time. OTPO sought parameter sets that minimized this value.
 
 \begin{table}[tb]
 \centering
-\caption{OTPO results of the best parameter combinations (PPQ).}
-\label{table:results-ppq} 
-\begin{tabular}{|c|c|} \hline
-Latency & Number of Combinations \\
+\caption{OTPO results of the best parameter combinations.}
+\label{table:results} 
+\begin{tabular}{|c|c||c|c|} 
 \hline
-3.78$\mu s$  & 3\\
+\multicolumn{2}{|c|}{PPQ} & \multicolumn{2}{|c|}{SRQ} \\
 \hline
-3.79$\mu s$  & 3\\
+Latency & Number of Combinations & Latency & Number of Combinations\\
 \hline
-3.80$\mu s$  & 15\\
+3.78$\mu s$  & 3& 3.77$\mu s$  & 1\\ 
+\hline		  
+3.79$\mu s$  & 3 & 3.78$\mu s$  & 4\\ 
+\hline		  
+3.80$\mu s$  & 15 & 3.79$\mu s$  & 18\\
 \hline
-3.81$\mu s$  & 21\\
-\hline
-3.82$\mu s$  & 31\\
-\hline
-3.83$\mu s$  & 34\\
+3.81$\mu s$  & 21 & 3.80$\mu s$  & 32\\
+\hline		  
+3.82$\mu s$  & 31 &3.81$\mu s$  & 69\\
+\hline		   
+3.83$\mu s$  & 34 & 3.82$\mu s$  & 69\\
 \hline
 \end{tabular}  
 \end{table}
 
-\begin{table}[tb]
-\centering
-\caption{OTPO results of the best parameter combinations (SRQ).}
-\label{table:results-srq} 
-\begin{tabular}{|c|c|} \hline
-Latency & Number of Combinations \\
-\hline
-3.77$\mu s$  & 1\\
-\hline
-3.78$\mu s$  & 4\\
-\hline
-3.79$\mu s$  & 18\\
-\hline
-3.80$\mu s$  & 32\\
-\hline
-3.81$\mu s$  & 69\\
-\hline
-3.82$\mu s$  & 69\\
-\hline
-\end{tabular}  
-\end{table}
 
-The results are summarized in Table~\ref{table:results-ppq} and
-Table~\ref{table:results-srq}. Although there were few parameter sets that
+The results are summarized in Table~\ref{table:results}. Although there were few parameter sets that
 resulted in the lowest latency ($3.78\mu s$ and $3.77\mu s$), there were many
 others that were within $0.05\mu s$.  With timings this low, jitter within the
 results is to be expected.

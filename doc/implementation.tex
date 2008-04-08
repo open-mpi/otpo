@@ -8,46 +8,10 @@
 %list of the parameter combinations that resulted in the best
 %performance for that test.
 
-Upon start of an optimization run, OTPO parses the input file using simple string tokenizing
+Upon start of an optimization run, OTPO parses an input file using simple string tokenizing
 techniques and creates a global structure that holds all the
-parameters and their options. This structure will be used to generate
-the ADCL objects.
-
-An array of ADCL attributes with size equals to the number of the
-parameters is allocated. Each attribute is created by generating all
-the possible values corresponding to that attribute, using the global
-structure. Then an attribute set is created from the array of
-attributes. The next step is to create an ADCL function object for
-each possible combination which satisfies all the RPNs specified in
-the parameter file. The array of function objects is then used to
-create the ADCL function set.  Finally, an ADCL request object is
-created to start the measurements.
-
-Once the ADCL request object is created, the request is ``started''
-for the given number of parameter value combinations.  Starting the
-request is equivalent to calling a function registered with the
-according {\tt ADCL\_\-Fnctset}. The function registered by OTPO
-performs the following actions:
-\begin{itemize}
-\item Fork a child process
-\item The child process sets the parameters in the environment that
-  need to be provided to the {\tt mpirun} command, such as the number
-  of processes, MCA parameters and values, and the
-  application/benchmark to run.
-%\item The child then gets the current function object of the request with a
-%  value for each parameter.
-%\item The child exports the parameter values to the environment.
-\item Finally the child launches {\tt mpirun} with the argument set.
-\item The parent process waits for the child to complete, and then
-  checks if the test was successful (e.g., {\tt mpirun} completed with
-  an exit status of 0).
-\item If the child succeeded, the parent will update the current
-  request with the value (e.g., latency) that the child measured for
-  the current parameter values.
-\item If the child does not complete within a specified timeout, the
-  parent process kills it, and updates the request with an invalid
-  value.
-\end{itemize}
+parameters and their options. OTPO than register a function for each possible combination of MCA parameters which satisfy the RPNs specified in the parameter file with ADCL. The function registered by OTPO first forks a child process. The child process sets the parameters in the environment that
+need to be provided to the {\tt mpirun} command, such as the number of processes, MCA parameters and values, and the   application/benchmark to run. Finally, the child launches {\tt mpirun} with the argument set. The parent process waits for the child to complete, and checks if the test was successful (e.g., {\tt mpirun} completed with an exit status of 0). If the child succeeded, the parent will update the current request with the value (e.g., latency) that the child measured for the current parameter values. If the child does not complete within a specified timeout, the parent process kills it, and updates the request with an invalid value.
 
 When measurements for all combinations of parameter values have been
 updated to the ADCL request object, OTPO gathers the results and saves
