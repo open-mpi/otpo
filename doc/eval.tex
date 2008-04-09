@@ -10,16 +10,10 @@ OTPO.
 
 \subsection{Results}
 
-Tests were run on the Shark cluster at the University of Houston.
+Tests were run on the shark cluster at the University of Houston.
 Shark consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by
 4x InfiniBand and Gigabit Ethernet network interconnects.  
-The InfiniBand switch is connected to two HCAs on every node, of which one is
-active, with an {\tt active\_mtu} of 2048 and an {\tt active\_speed} of 2.5
-Gbps. OFED 1.1 is installed on the nodes. 
-
-A pre-release version of Open MPI v1.3 was used to generate these
-results, Subversion trunk revision 17198. A nightly snapshot of the trunk was
-used, and configured with debug disabled. All the tests were run with
+The InfiniBand switch is connected to a single HCAs on every node, with an {\tt active\_mtu} of 2048 and an {\tt active\_speed} of 2.5 Gbps. OFED 1.1 is installed on the nodes.  A pre-release version of Open MPI v1.3 was used to generate these results, subversion trunk revision 17198. A nightly snapshot of the trunk was used, and configured with debug disabled. All the tests were run with
 {\tt MPI\_LEAVE\_PINNED} set to one.
 
 OTPO was used to explore the parameter space of {\tt

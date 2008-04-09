@@ -7,27 +7,27 @@ responsible for actually moving bytes from one MPI process to
 another.  The {\tt openib} BTL has both single- and multiple-value
 parameters that can be adjusted at run-time.
 
-Open MPI internally ranks network interconnects based on the best
-latency achievable by that network.  Upon application startup, the MPI
-library determines the list of available networks on each process and
-to each process.  A single process may therefore use multiple network
-interconnects for communication to different processes.  The default
-behavior of Open MPI always chooses the network with the lowest
-latency for short messages.  The ``{\tt btl}'' MCA run-time parameter
-can be used to override this behavior and manually enforce the usage
-of a particular network (or set of networks) for MPI communications,
-For example, to force the use of InfiniBand networks, a user can
-specify {\tt --mca btl openib} on the command line, indicating that
-{\em only} the {\tt openib} BTL module should be used.  Note that this
-will disable all other BTL modules, even potentially lower latency
-networks (such as shared memory, which would have otherwise been used
-for communication on the same node).
+%Open MPI internally ranks network interconnects based on the best
+%latency achievable by that network.  Upon application startup, the MPI
+%library determines the list of available networks on each process and
+%to each process.  A single process may therefore use multiple network
+%interconnects for communication to different processes.  The default
+%behavior of Open MPI always chooses the network with the lowest
+%latency for short messages.  The ``{\tt btl}'' MCA run-time parameter
+%can be used to override this behavior and manually enforce the usage
+%of a particular network (or set of networks) for MPI communications,
+%For example, to force the use of InfiniBand networks, a user can
+%specify {\tt --mca btl openib} on the command line, indicating that
+%{\em only} the {\tt openib} BTL module should be used.  Note that this
+%will disable all other BTL modules, even potentially lower latency
+%networks (such as shared memory, which would have otherwise been used
+%for communication on the same node).
 
 There are more than 50 MCA parameters that are related to the {\tt
   openib} BTL module, all of which can be modified at runtime.  Open
 MPI attempts to provide reasonable default values for these
 parameters, but every application and every platform is different:
-maximum performance can only be achived through tuning for a specific
+maximum performance can only be achieved through tuning for a specific
 platform and application behavior.
 
 A good parameter space for OTPO to search is the tunable values
