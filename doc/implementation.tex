@@ -10,7 +10,7 @@
 
 Upon start of an optimization run, OTPO parses an input file %using simple string tokenizing techniques 
 and creates a global structure that holds all the
-parameters and their options. OTPO than register a function for each possible combination of MCA parameters which satisfy the RPNs specified in the parameter file with ADCL. The function registered by OTPO first forks a child process. The child process sets the parameters in the environment that
+parameters and their options. OTPO then registers a function for each possible combination of MCA parameters which satisfies the RPNs specified in the parameter file with ADCL. The function registered by OTPO first forks a child process. The child process sets the parameters in the environment that
 need to be provided to the {\tt mpirun} command, such as the number of processes, MCA parameters and values, and the   application/benchmark to run. Finally, the child launches {\tt mpirun} with the argument set. The parent process waits for the child to complete, and checks if the test was successful. %(e.g., {\tt mpirun} completed with an exit status of 0)
 If the child succeeded, the parent will update the current request with the value (e.g., latency) that the child measured for the current parameter values. If the child does not complete within a specified timeout, the parent process kills it, and updates the request with an invalid value.
 
