@@ -62,9 +62,7 @@ a different protocol and are governed by a different set of MCA
 parameters).  Specifically, this MCA parameter is used to specify one
 or more receive queues that will be setup in each MPI process for
 InfiniBand communication.  There are two types of receive queues, each
-of which have multiple sub-parameters:\footnote{As with the eager RDMA
-  MCA parameters, the {\tt btl\_\-openib\_\-receive\_\-queues} MCA
-  parameter is only briefly described in this paper.}
+of which have multiple sub-parameters. It is however outside of the scope of this paper to give detailed and precise descriptions of the MCA parameters used. The parameters are:
 
 \begin{enumerate}
 \item ``Per-peer'' receive queues are dedicated to receiving messages
@@ -100,7 +98,7 @@ controlling Open MPI's use of RDMA for short messages.  Short message
 RDMA is a resource-intensive, non-scalable optimization for minimizing
 point-to-point short message latency.  Finding a good balance between
 the desired level of optimization and the resources consumed by this
-optimization is exactly the kind of task that OTPO was designed for. Among the most relevant parameters with regard to RDMA operations are {\tt btl\_\-openib\_\-ib\_\-max\_\-rdma\_\-dst\_\-opts}, which limits the maximum number of outstanding RDMA operations to a specific destination; {\tt btl\_\-openib\_\-use\_\-eager\_\-rdma}, a logical value specifying whether to use the RDMA protocol for eager messages; and {\tt btl\_\-openib\_\-eager\_\-rdma\_\-threshold}, only use RDMA for short messages to a given peer after this number of messages has been received from that peer. For space limitations, we will not detail all parameters or present results of the according OTPO runs.
+optimization is exactly the kind of task that OTPO was designed for. Among the most relevant parameters with regard to RDMA operations are {\tt btl\_\-openib\_\-ib\_\-max\_\-rdma\_\-dst\_\-opts}, which limits the maximum number of outstanding RDMA operations to a specific destination; {\tt btl\_\-openib\_\-use\_\-eager\_\-rdma}, a logical value specifying whether to use the RDMA protocol for eager messages; and {\tt btl\_\-openib\_\-eager\_\-rdma\_\-threshold}, only use RDMA for short messages to a given peer after this number of messages has been received from that peer. Due to space limitations, we will not detail all RDMA parameters or present RDMA results of the according OTPO runs.
 
 %%% Local Variables: 
 %%% mode: latex
