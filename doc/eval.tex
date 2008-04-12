@@ -14,11 +14,11 @@ Tests were run on the shark cluster at the University of Houston.
 Shark consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by
 4x InfiniBand and Gigabit Ethernet network interconnects.  
 The InfiniBand switch is connected to a single HCAs on every node, with an {\tt active\_mtu} of 2048 and an {\tt active\_speed} of 2.5 Gbps. OFED 1.1 is installed on the nodes.  A pre-release version of Open MPI v1.3 was used to generate these results, subversion trunk revision 17198. A nightly snapshot of the trunk was used, and configured with debug disabled. All the tests were run with
-{\tt MPI\_LEAVE\_PINNED} set to one.
+{\tt mpi\_leave\_pinner} MCA parameter set to one.
 
 OTPO was used to explore the parameter space of {\tt
   btl\_\-openib\_\-receive\_\-queues} to find a set of values that
-yield the lowest short message latency.  Since {\tt receive\_\-queues}
+yield the lowest half round trip short message latency.  Since {\tt receive\_\-queues}
 is a multiple-value parameter, each sub-parameter must be described to
 OTPO.  The individual sub-parameters become ``virtual'' parameters,
 each with a designated range to explore.  OTPO was configured to test
