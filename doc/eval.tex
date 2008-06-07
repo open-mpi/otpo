@@ -14,7 +14,7 @@ Tests were run on the shark cluster at the University of Houston.
 Shark consists of 24 dual-core 2.2GHz AMD Opteron nodes connected by
 4x InfiniBand and Gigabit Ethernet network interconnects.  
 The InfiniBand switch is connected to a single HCAs on every node, with an {\tt active\_mtu} of 2048 and an {\tt active\_speed} of 2.5 Gbps. OFED 1.1 is installed on the nodes.  A pre-release version of Open MPI v1.3 was used to generate these results, subversion trunk revision 17198. A nightly snapshot of the trunk was used, and configured with debug disabled. All the tests were run with
-{\tt mpi\_leave\_pinner} MCA parameter set to one.
+{\tt mpi\_leave\_pinned} MCA parameter set to one. The benchmark used for tuning the parameters was NetPIPE~\cite{netpipe}.
 
 OTPO was used to explore the parameter space of {\tt
   btl\_\-openib\_\-receive\_\-queues} to find a set of values that
@@ -60,7 +60,7 @@ The parameters that are used are explained as follows:\\
 \end{itemize}
 
 The parameter space from Table~\ref{table:eval-queue-search-params} yields,
-275 for per peer queue and 825 for shared queue valid combinations (after
+275 for per peer queue  and 825 for shared queue valid combinations (after
 removing unnecessary combinations that would lead to incorrect
 results). These combinations stressed buffer management and flow control
 issues in the Open MPI short message protocol when sending 1 byte
@@ -74,7 +74,7 @@ Note that NetPIPE runs several ping-pong tests and reports half the average roun
 \label{table:results} 
 \begin{tabular}{|c|c||c|c|} 
 \hline
-\multicolumn{2}{|c|}{PPQ} & \multicolumn{2}{|c|}{SRQ} \\
+\multicolumn{2}{|c|}{Per Peer Queue} & \multicolumn{2}{|c|}{Shared Receive Queue} \\
 \hline
 Latency & Number of Combinations & Latency & Number of Combinations\\
 \hline
