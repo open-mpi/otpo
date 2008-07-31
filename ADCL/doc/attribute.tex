@@ -1,0 +1,69 @@
+\section{Attributes and Attribute-sets}
+
+An {\tt ADCL\_Attribute} is an abstraction for a particular characteristic of
+a function/implementation. Each attribute is represented by a set of possible
+values.  An {\tt ADCL\_Attrset} is a group of ADCL attributes.  In the
+following, we present the constructors and destructors for both ADCL objects.
+
+\begin{verbatim}
+int ADCL_Attribute_create ( int maxnvalues, int *array_of_values, 
+         char ** array_of_value_names, char *attr_name, 
+         ADCL_Attribute *attr);
+
+subroutine ADCL_Attribute_create ( maxnvalues, array_of_values, 
+                attr, ierror )
+integer maxnvalues, attr, ierr
+integer array_of_values (*)
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt maxnvalues}(IN): number of possible values for this attribute
+\item {\tt array\_of\_values}(IN): integer array of size {\tt maxnvalues} containing the possible values for this 
+  attribute. The values in this array have to be monotony increasing. However, they do not have to be contiguous.
+\item {\tt array\_of\_value\_names}(IN): character array specifying a name for
+  each attribute value. Not available in the fortran interface as of now.
+\item {\tt attr\_name}(IN): name of the attribute. Not available in the
+  fortran interface as of now.
+\item {\tt attr}(OUT): handle to the attribute object
+\end{itemize} 	
+
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Attribute_free   ( ADCL_Attribute *attr );
+
+subroutine ADCL_Attribute_free ( attr, ierror )
+integer attr, ierror
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt attr}(INOUT): handle to the ADCL attribute to be freed. The handle has to be a valid attribute.
+    	Upon successful completion, the handle will be set to {\tt ADCL\_ATTRIBUTE\_NULL}.
+\end{itemize}
+
+\begin{verbatim}
+int ADCL_Attrset_create ( int maxnum, 
+         ADCL_Attribute *array_of_attrs, ADCL_Attrset *attrset );
+
+subroutine ADCL_Attrset_create ( maxnum, array_of_attrs, 
+                attrset, ierror )
+integer maxnum, attrset, ierror
+integer array_of_attrs (*)
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt maxnum}(IN): number of attributes to be grouped
+\item {\tt array\_of\_attrs}(IN): array of size {\tt maxnum} containing the handles to attributes. Each entry of the array has to be a valid ADCL attribute created with {\tt ADCL\_Attribute\_create}.
+\item {\tt attrset}(OUT): handle to the attribute-set object
+\end{itemize}
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Attrset_free ( ADCL_Attrset *attrset );
+
+subroutine ADCL_Attrset_free ( attrset, ierror )
+integer attrset, ierror
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt attrset}(INOUT): handle to the ADCL attribute-set to be freed. The handle has to be a valid attribute-set.
+    	Upon successful completion, the handle will be set to {\tt ADCL\_ATTRSET\_NULL}.
+\end{itemize}

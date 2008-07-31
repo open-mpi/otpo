@@ -1,0 +1,55 @@
+INSTALLATION NOTES for NEC SX-8
+
+###############################################################
+# WITH CROSS-COMPILING                                        #
+###############################################################
+
+
+1. extract ADCL sources
+
+2. set environment variables
+
+   export CC=sxcc
+   export F77=sxf90
+   export AR=sxar
+
+   and eventually CFLAGS, FFLAGS, LDFLAGS
+
+3. run configure with at least these options
+
+   ./configure --host=sx8-nec-superux15.1 --with-mpi-dir=/SX/usr/ 
+       --with-mpi-cc=sxmpicc --with-mpi-f90=sxmpif90 \
+
+4. run make
+
+
+###############################################################
+# WITHOUT CROSS-COMPILING                                     #
+###############################################################
+
+1. extract ADCL sources
+
+2. run configure on v00
+   rsh v00
+   cd ADCL/trunk
+   ./configure
+   exit
+
+3. edit Makefile.defs
+   replace 
+     CC          = /usr/local/mpi//bin/mpicc
+     FC          = /usr/local/mpi//bin/mpif90
+   by 
+     CC          = mpicc
+     FC          = mpif90
+   add "-EP -D_SX" to FFLAGS
+
+4. no efence library in test/solversys/Makefile
+
+5. redefine compilers -> cross-compilers
+   extract sxcompiler.tgz (available from benkert@hlrs.de) and add it 
+   to the PATH environment variable
+
+   export PATH=~/sxcompiler/:$PATH
+
+6. run make

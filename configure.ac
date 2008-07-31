@@ -143,7 +143,7 @@ if test "${adcl_dir}" = "${PWD}/ADCL"; then
    AC_MSG_CHECKING([for subdir args])
    OTPO_CONFIG_SUBDIR_ARGS([adcl_subdir_args])
    AC_MSG_RESULT([$adcl_subdir_args])
-   adcl_subdir_args="$adcl_subdir_args --with-num-tests=1 --enable-printf-tofile --enable-userlevel-timings --enable-dummy-mpi"
+   adcl_subdir_args="$adcl_subdir_args --with-num-tests=1 --enable-printf-tofile --enable-userlevel-timings --enable-dummy-mpi --disable-fortran"
    OTPO_CONFIG_SUBDIR(ADCL, [$adcl_subdir_args], [HAPPY=1], [HAPPY=0])
 fi
 

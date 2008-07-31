@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) 2006-2007      University of Houston. All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+#ifndef __ADCL_SYS_CONFIG_H__
+#define __ADCL_SYS_CONFIG_H__
+
+/* How many iterations are we testing each single method? Should
+   probably be a parameter later on */
+#define ADCL_EMETHOD_NUMTESTS @adcl_emethod_numtests@
+
+
+#endif
+

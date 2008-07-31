@@ -1,0 +1,31 @@
+\section{Introduction and Terminology}
+
+ADCL is an application level communication library aiming at providing the highest possible performance for application level communication patterns, such as the n-D neighhorhood communication, within a given execution environment. The library provides for each communication pattern a large number of implementations and incorporates a runtime selection logic in order to choose the implementation leading to the highest performance of the application on the current platform. Two different runtime selection algorithms are currently available within ADCL: the library can either apply a brute force search strategy which tests all available implementations of a given communication pattern; alternatively, a heuristic relying on attributes characterizing an implementation has been developed in order to speed up the runtime decision procedure.
+
+ADCL is not supposed to be a replacement for MPI, but on add-on library. In fact, ADCL relies and exploits many of the features of MPI, and does not offer for example point-to-point transfer primitives. ADCL also does not replace 'simple' collective operations such as broadcast and reductions, since there are abstractions for these operations available in MPI already.
+The ADCL API offers high level interfaces of application level collective operations. The high level interfaces are required in order to be able to switch within the library the implementation of the according collective operation without modifying the application itself. Thus, ADCL complements functionality available within MPI. The main objects within the ADCL API are:
+
+\begin{itemize}
+\item {\tt ADCL\_Attribute}s, which are an abstraction for particular characteristic of a function/implementation. Each attribute is represented by the set of possible values for this characteristic.
+\item {\tt ADCL\_Attrset}s, which represent a collection of ADCL attributes
+\item {\tt ADCL\_Function}s, each of them being equivalent to an actual implementation of a particular communication pattern. An ADCL Function can have an attribute-set attached to it, in which case the values for each of the attributes in the attribute-set for this particular function have to be defined.
+\item {\tt ADCL\_Fnctset}s, which represent a collection of ADCL functions providing the same functionality. All Functions in a function-set have to have the same attribute-set. ADCL provides pre-defined function sets, such as for neighborhood communication ({\tt ADCL\_FNCTSET\_NEIGHBORHOOD}) or for shift operations ({\tt ADCL\_FNCTSET\_SHIFT}). The user can however also register its own functions in order to utilize the ADCL runtime selection logic.
+\item {\tt ADCL\_Topology} objects, which provides a description of the process topology and neighborhood relations within the application.
+
+
+\item {\tt ADCL\_Vectors} which specify the data structures to be used during
+  the communication and the actual data. The user can for example {\it
+    register} a data structure such as a vector or a matrix with the ADCL
+  library, detailing how many dimensions the object has, the extent of each
+  dimension, which parts of the matrix shall be used for communication, the
+  basic datatype of the object, and the pointer to the data array of the
+  object.
+\item {\tt ADCL\_Vectset}: a collection of ADCL vectors having the same
+  dimensions and extent
+
+\item {\tt ADCL\_Request} objects, which combines a process topology, a
+  function-set and a vector object. The application can initiate a
+  communication by starting a particular ADCL request.
+\end{itemize}
+
+This document discusses each of the objects in details and explains the user level API functions.
