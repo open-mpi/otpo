@@ -6,6 +6,7 @@
 
 #include "ADCL.h"
 #include "otpo_config.h"
+#include "time.h"
 
 #define LINE_SIZE 1000
 #define CONDITION_LENGTH 500
