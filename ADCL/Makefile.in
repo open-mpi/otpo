@@ -30,7 +30,6 @@ all:
 	cd src/memory ; make
 	cd src/communication ; make 
 	cd src/adcl/C ; make all 
-	cd src/adcl/f90 ; make all 
 	@dumpi_make@
 
 clean:
@@ -38,7 +37,6 @@ clean:
 	cd src/memory ; make clean
 	cd src/communication ; make clean
 	cd src/adcl/C ; make clean 
-	cd src/adcl/f90 ; make clean 
 	@dumpi_clean@
 	rm -rf *~ ./include/*~ 
 	rm -rf ./lib/libadcl.a
