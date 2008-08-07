@@ -14,10 +14,10 @@ OBJ =	ADCL_change_sb_aao_debug.o \
 	ADCL_change_sb_aao_IsendIrecv_pack.o \
 	ADCL_change_sb_pair_debug.o \
 	ADCL_change_sb_pair_IsendIrecv.o \
-	ADCL_change_sb_pair_SendRecv.o \
+	ADCL_change_sb_pair_Send_Recv.o \
 	ADCL_change_sb_pair_SendIrecv.o \
 	ADCL_change_sb_pair_IsendIrecv_pack.o\
-	ADCL_change_sb_pair_SendRecv_pack.o\
+	ADCL_change_sb_pair_Send_Recv_pack.o\
 	ADCL_change_sb_pair_SendIrecv_pack.o \
 	ADCL_change_sb_aao_SendIrecv_pack.o \
 	ADCL_change_sb_pair_Sendrecv_pack.o \
@@ -65,9 +65,9 @@ ADCL_change_sb_pair_IsendIrecv.o :$(HEADER) ADCL_change_sb_pair.c
 	$(CC) $(CFLAGS) -c ADCL_change_sb_pair.c -DCOMMMODE=1 \
 			-o ADCL_change_sb_pair_IsendIrecv.o 
 
-ADCL_change_sb_pair_SendRecv.o :$(HEADER) ADCL_change_sb_pair.c
+ADCL_change_sb_pair_Send_Recv.o :$(HEADER) ADCL_change_sb_pair.c
 	$(CC) $(CFLAGS) -c ADCL_change_sb_pair.c -DCOMMMODE=2 \
-			-o ADCL_change_sb_pair_SendRecv.o 
+			-o ADCL_change_sb_pair_Send_Recv.o 
 
 ADCL_change_sb_pair_SendIrecv.o :$(HEADER) ADCL_change_sb_pair.c
 	$(CC) $(CFLAGS) -c ADCL_change_sb_pair.c -DCOMMMODE=3 \
@@ -77,9 +77,9 @@ ADCL_change_sb_pair_IsendIrecv_pack.o :$(HEADER) ADCL_change_sb_pair.c
 	$(CC) $(CFLAGS) -c ADCL_change_sb_pair.c -DCOMMMODE=4 \
 			-o ADCL_change_sb_pair_IsendIrecv_pack.o
 
-ADCL_change_sb_pair_SendRecv_pack.o :$(HEADER) ADCL_change_sb_pair.c
+ADCL_change_sb_pair_Send_Recv_pack.o :$(HEADER) ADCL_change_sb_pair.c
 	$(CC) $(CFLAGS) -c ADCL_change_sb_pair.c -DCOMMMODE=5 \
-			-o ADCL_change_sb_pair_SendRecv_pack.o	
+			-o ADCL_change_sb_pair_Send_Recv_pack.o	
 
 ADCL_change_sb_pair_SendIrecv_pack.o :$(HEADER) ADCL_change_sb_pair.c
 	$(CC) $(CFLAGS) -c ADCL_change_sb_pair.c -DCOMMMODE=6 \

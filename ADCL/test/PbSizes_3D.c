@@ -25,7 +25,7 @@
 /* Implementations names */
 char *impl_names[NB_OF_IMPL] = {"IsendIrecv_aao","SendIrecv_aao","IsendIrecv_aao_pack","SendIrecv_aao_pack",
                                "IsendIrecv_pair","IsendIrecv_pair_pack","SendIrecv_pair","SendIrecv_pair_pack",
-                               "Sendrecv_pair","SendRecv_pair","Sendrecv_pair_pack","SendRecv_pair_pack"};
+                               "Sendrecv_pair","Send_Recv_pair","Sendrecv_pair_pack","Send_Recv_pair_pack"};
 
 /* Dimensions of the data matrix per process */
 int ProblemSizes[NB_OF_SIZES][3] = { {32,32,32}, {40,32,32}, {40,40,32}, {40,40,40},
@@ -163,7 +163,7 @@ int main ( int argc, char ** argv )
         /* Evaluate implementation 10 */
         t_start = MPI_Wtime();
         for ( it=0; it<NB_OF_ITERATIONS; it++ ) {
-             ADCL_change_sb_pair_SendRecv( request );
+             ADCL_change_sb_pair_Send_Recv( request );
         }
         elapsed_time[9] = MPI_Wtime()-t_start;
 
@@ -177,7 +177,7 @@ int main ( int argc, char ** argv )
         /* Evaluate implementation 12 */
         t_start = MPI_Wtime();
         for ( it=0; it<NB_OF_ITERATIONS; it++ ) {
-             ADCL_change_sb_pair_SendRecv_pack( request );
+             ADCL_change_sb_pair_Send_Recv_pack( request );
         }
         elapsed_time[11] = MPI_Wtime()-t_start;
 

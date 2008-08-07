@@ -51,7 +51,7 @@ extern const int ADCL_attr_noncont_individual;
 /*=================================================================*/
 /*
 ** Data transfer primitives
-** Possible values: IsendIrecv, SendIrecv, SendRecv, Sendrecv,
+** Possible values: IsendIrecv, SendIrecv, Send_Recv, Sendrecv,
 **                  FenceGet, FencePut, PostStartGet, PostStartPut
 */
 #define ADCL_ATTR_TRANSFER 2
@@ -64,7 +64,7 @@ extern const int ADCL_attr_noncont_individual;
 
 extern const int ADCL_attr_transfer_IsendIrecv;
 extern const int ADCL_attr_transfer_SendIrecv;
-extern const int ADCL_attr_transfer_SendRecv;
+extern const int ADCL_attr_transfer_Send_Recv;
 extern const int ADCL_attr_transfer_Sendrecv;
 #ifdef MPI_WIN
 extern const int ADCL_attr_transfer_FenceGet;

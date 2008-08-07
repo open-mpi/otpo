@@ -71,7 +71,7 @@ int main ( int argc, char ** argv )
       ADCL_change_sb_aao_IsendIrecv_pack ( request );
 //    ADCL_change_sb_pair_debug ( request );
 //    ADCL_change_sb_pair_IsendIrecv ( request );
-//    ADCL_change_sb_pair_SendRecv ( request );
+//    ADCL_change_sb_pair_Send_Recv ( request );
 //    ADCL_change_sb_pair_SendIrecv ( request );
 //    ADCL_change_sb_pair_IsendIrecv_pack ( request );
 

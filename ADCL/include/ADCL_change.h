@@ -57,8 +57,8 @@
   #define RECV_WAIT(req,i) MPI_Wait(&req->r_rreqs[i], MPI_STATUS_IGNORE)
 
 #elif COMMMODE == 2
-  #define COMMTEXT  "SendRecv"
-  #define ADCL_CHANGE_SB_PAIR ADCL_change_sb_pair_SendRecv
+  #define COMMTEXT  "Send_Recv"
+  #define ADCL_CHANGE_SB_PAIR ADCL_change_sb_pair_Send_Recv
 
   #define PREPARE_COMMUNICATION(req)
   #define STOP_COMMUNICATION(req)
@@ -126,9 +126,9 @@
 
 #elif COMMMODE == 5
 
-  #define COMMTEXT "SendRecvPack"
+  #define COMMTEXT "Send_RecvPack"
 
-  #define ADCL_CHANGE_SB_PAIR ADCL_change_sb_pair_SendRecv_pack
+  #define ADCL_CHANGE_SB_PAIR ADCL_change_sb_pair_Send_Recv_pack
 
   #define PREPARE_COMMUNICATION(req)
   #define STOP_COMMUNICATION(req)
@@ -325,7 +325,7 @@ void ADCL_change_sb_aao_IsendIrecv  (ADCL_request_t *req );
 void ADCL_change_sb_pair_IsendIrecv (ADCL_request_t *req );
 
 /*COMM 2*/
-void ADCL_change_sb_pair_SendRecv (ADCL_request_t *req );
+void ADCL_change_sb_pair_Send_Recv (ADCL_request_t *req );
 
 
 /*COMM 3*/
@@ -337,17 +337,17 @@ void ADCL_change_sb_aao_IsendIrecv_pack  (ADCL_request_t *req );
 void ADCL_change_sb_pair_IsendIrecv_pack (ADCL_request_t *req );
 
 /*COMM 5*/
-void ADCL_change_sb_pair_SendRecv_pack (ADCL_request_t *req );
+void ADCL_change_sb_pair_Send_Recv_pack (ADCL_request_t *req );
 
 /*COMM 6*/
 void ADCL_change_sb_aao_SendIrecv_pack  (ADCL_request_t *req );
 void ADCL_change_sb_pair_SendIrecv_pack (ADCL_request_t *req );
 
-/* COMM 7: SendRecv-Packed datatype*/
+/* COMM 7: Sendrecv-Packed datatype*/
 
 void ADCL_change_sb_pair_Sendrecv_pack (ADCL_request_t *req );
 
-/* COMM 8: SendRecv-Derived datatype*/
+/* COMM 8: Sendrecv-Derived datatype*/
 void ADCL_change_sb_pair_Sendrecv(ADCL_request_t *req );
 
 /* COMM 9: Win_fence_put-Derived datatype*/

@@ -31,7 +31,7 @@ const int ADCL_attr_noncont_individual=112;
 
 const int ADCL_attr_transfer_IsendIrecv=120;
 const int ADCL_attr_transfer_SendIrecv=121;
-const int ADCL_attr_transfer_SendRecv=122;
+const int ADCL_attr_transfer_Send_Recv=122;
 const int ADCL_attr_transfer_Sendrecv=123;
 #ifdef MPI_WIN
 const int ADCL_attr_transfer_FenceGet=124;
@@ -56,12 +56,12 @@ int ADCL_predefined_init ( void )
     char *ADCL_attr_noncont_names[ADCL_ATTR_NONCONT_MAX] = { "ddt ","pack" };
 #ifdef MPI_WIN
     char *ADCL_attr_transfer_names[ADCL_ATTR_TRANSFER_MAX] = { "IsendIrecv", "SendIrecv",
-                                                               "SendRecv", "Sendrecv",
+                                                               "Send_Recv", "Sendrecv",
                                                                "FenceGet", "FencePut",
                                                                "StartPostGet","StartPostPut" };
 #else
     char *ADCL_attr_transfer_names[ADCL_ATTR_TRANSFER_MAX] = { "IsendIrecv", "SendIrecv",
-                                                               "SendRecv", "Sendrecv" };
+                                                               "Send_Recv", "Sendrecv" };
 #endif
 
     ADCL_attr_mapping[0] = ADCL_attr_mapping_aao;
@@ -72,7 +72,7 @@ int ADCL_predefined_init ( void )
 
     ADCL_attr_transfer[0] = ADCL_attr_transfer_IsendIrecv;
     ADCL_attr_transfer[1] = ADCL_attr_transfer_SendIrecv;
-    ADCL_attr_transfer[2] = ADCL_attr_transfer_SendRecv;
+    ADCL_attr_transfer[2] = ADCL_attr_transfer_Send_Recv;
     ADCL_attr_transfer[3] = ADCL_attr_transfer_Sendrecv;
 #ifdef MPI_WIN
     ADCL_attr_transfer[4] = ADCL_attr_transfer_FenceGet;
@@ -190,14 +190,14 @@ int ADCL_predefined_init ( void )
     count++;
 
 
-    /* pair, ddt, SendRecv */
+    /* pair, ddt, Send_Recv */
     m_attr[ADCL_ATTR_MAPPING]   = ADCL_attr_mapping_pair;
     m_attr[ADCL_ATTR_NONCONT]   = ADCL_attr_noncont_ddt;
-    m_attr[ADCL_ATTR_TRANSFER]  = ADCL_attr_transfer_SendRecv;
+    m_attr[ADCL_ATTR_TRANSFER]  = ADCL_attr_transfer_Send_Recv;
     /* m_attr[ADCL_ATTR_NUMBLOCKS] = ADCL_attr_numblocks_single; */
-    ADCL_function_create_async ( ADCL_change_sb_pair_SendRecv, NULL,
+    ADCL_function_create_async ( ADCL_change_sb_pair_Send_Recv, NULL,
                                  ADCL_neighborhood_attrset,
-                                 m_attr, "SendRecv_pair",
+                                 m_attr, "Send_Recv_pair",
                                  &ADCL_neighborhood_functions[count]);
     count++;
 
@@ -214,14 +214,14 @@ int ADCL_predefined_init ( void )
     count++;
 
 
-    /* pair, pack, SendRecv */
+    /* pair, pack, Send_Recv */
     m_attr[ADCL_ATTR_MAPPING]   = ADCL_attr_mapping_pair;
     m_attr[ADCL_ATTR_NONCONT]   = ADCL_attr_noncont_pack;
-    m_attr[ADCL_ATTR_TRANSFER]  = ADCL_attr_transfer_SendRecv;
+    m_attr[ADCL_ATTR_TRANSFER]  = ADCL_attr_transfer_Send_Recv;
     /* m_attr[ADCL_ATTR_NUMBLOCKS] = ADCL_attr_numblocks_single; */
-    ADCL_function_create_async ( ADCL_change_sb_pair_SendRecv_pack, NULL,
+    ADCL_function_create_async ( ADCL_change_sb_pair_Send_Recv_pack, NULL,
                                  ADCL_neighborhood_attrset,
-                                 m_attr, "SendRecv_pair_pack",
+                                 m_attr, "Send_Recv_pair_pack",
                                  &ADCL_neighborhood_functions[count]);
     count ++;
 
