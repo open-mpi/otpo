@@ -13,6 +13,7 @@
 #include "otpo.h"
 
 void handler (int);
+void create_skampi_ipfile(void);
 static int get_num_combinations ();
 static int set_mca_options (int, char**);
 static void print_usage (void);
@@ -49,13 +50,16 @@ int main(int argc , char *argv[])
         { "out", required_argument, NULL, 'o' },
         { "backup", required_argument, NULL, 'b' },
         { "resume", required_argument, NULL, 'r' },
+        { "collective_operation", required_argument, NULL, 'c'},
+        { "number_of_processes", required_argument, NULL, 'a'},
+        { "Operation", required_argument, NULL, 'e'},
         { NULL, 0, NULL, 0 }
     };
 
     et1 = time (NULL);
     stop_signal = 0;
 
-    verbose = 0;
+    verbose = 1;
     status = 0;
     debug = 0;
     mca_args_len = 0;
@@ -65,6 +69,9 @@ int main(int argc , char *argv[])
     msg_size = NULL;
     resume = 0;
     time(&stamp);
+    op_num = 0;
+    num_proc = NULL;
+    operation = NULL;
 
     if (SUCCESS != set_mca_options (argc, argv)) 
     {
@@ -72,7 +79,8 @@ int main(int argc , char *argv[])
         exit(1);
     }
 
-    while (-1 != (i = getopt_long (argc, argv, "p:t:w:vsndl:m:h:g:o:f:r:b:", long_opts, NULL))) 
+    while (-1 != (i = getopt_long (argc, argv, "p:t:w:vsndl:m:h:g:o:f:r:b:c:a:e:", 
+                                   long_opts, NULL))) 
     {
         switch (i) 
         {
@@ -109,7 +117,7 @@ int main(int argc , char *argv[])
             break;
         case 't':
             test = strdup (optarg);
-            if (strcasecmp (test,"Netpipe"))
+            if (strcasecmp (test,"Netpipe") && strcasecmp (test,"skampi"))
             {
                 printf ("Invalid Test Name\n");
                 exit (1);
@@ -133,6 +141,20 @@ int main(int argc , char *argv[])
             break;
         case 'o':
             output_dir = strdup (optarg);
+            break;
+        case 'c':
+            op_num =  atoi(optarg);
+            if (op_num < 0 || op_num > 11)
+            {
+                printf("Invalid Collective Operation number!");
+                exit(1);
+            }
+            break;
+        case 'a':
+            num_proc = strdup(optarg);
+            break;
+        case 'e':
+            operation = strdup (optarg);
             break;
         default: 
             print_usage();
@@ -166,20 +188,43 @@ int main(int argc , char *argv[])
 
     if (NULL == msg_size)
     {
-        msg_size = strdup ("1");
+        msg_size = strdup ("1024");
     }
 
     if (NULL == test)
     {
         test = strdup ("Netpipe");
     }
+    
+    if (NULL == num_proc) 
+    {
+        num_proc = strdup ("2");
+    }
+
+    if ((NULL == operation)&& !(strcasecmp(test, "skampi")))
+    {
+        operation = strdup ("MPI_MAX");
+    }
 
     if (verbose || debug)
     {
         printf ("I will read the Parameter from %s\n", input_file);
-        printf ("I will write the intermediate results to %s/result%ld\n", output_dir,stamp);
-        printf ("In case I detect an interrupt, I will write my data to %s\n", interrupt_file);
-        printf ("The Test case will be using %s, with %s byte messages\n",test,msg_size); 
+        printf ("I will write the intermediate results to %s/result%ld\n", 
+                output_dir,stamp);
+        printf ("In case I detect an interrupt, I will write my data to %s\n", 
+                interrupt_file);
+        printf ("The Test case will be using %s, with %s byte messages\n",
+                test,msg_size); 
+        if(!strcasecmp(test, "skampi"))
+        {
+            printf("I will use the operation of number %d with %s number of processes\n", 
+                   op_num, num_proc);
+        }
+    }
+
+    if( !strcasecmp(test,"skampi"))
+    {
+        create_skampi_ipfile();
     }
 
     /* read file to get number of parameters */
@@ -218,7 +263,8 @@ int main(int argc , char *argv[])
     }
     
     /* allocating the list of ADCL attributes */
-    ADCL_param_attributes = (ADCL_Attribute *)malloc(sizeof(ADCL_Attribute) * num_parameters);
+    ADCL_param_attributes = (ADCL_Attribute *)malloc(sizeof(ADCL_Attribute) 
+                                                     * num_parameters);
     if( NULL == ADCL_param_attributes ) 
     {
         fprintf (stderr,"Malloc Failed...\n");
@@ -415,6 +461,19 @@ int main(int argc , char *argv[])
     {
         free (hostf);
     }
+    if(!strcasecmp(test,"skampi"))
+    {
+        if (NULL != operation) 
+        {
+            free (operation);
+        }
+    }    
+
+    if (NULL != num_proc) 
+    {
+        free (num_proc);
+    }
+
     et2 = time (NULL);
     sec = 0;
     hr = 0;
@@ -572,7 +631,8 @@ int otpo_dump_list ()
                         printf("%d\t", list_params[i].rpn_elements[k].value.integer_value);
                         break;
                     case PARAM:
-                        printf("%s\t", list_params[list_params[i].rpn_elements[k].value.param_index].name);
+                        printf("%s\t", list_params[list_params[i].rpn_elements[k].
+                                                   value.param_index].name);
                         break;
                     }
                 }
@@ -584,6 +644,70 @@ int otpo_dump_list ()
     return SUCCESS;
 }
 
+void create_skampi_ipfile()
+{
+    FILE *fp;
+    char coll_ops[12][15] = {"Bcast", "Barrier", "Reduce", "Allreduce", "Gather", "Allgather", 
+                             "Gatherv", "Allgatherv", "Alltoall", "Alltoallv", "Scatter", "Scatterv" };
+
+    fp = fopen("skampi.ski", "w");
+    fprintf(fp, "set_min_repetitions(500)\n");
+    fprintf(fp, "set_max_repetitions(1000)\n");
+    fprintf(fp, "set_max_relative_standard_error(0.03)\n");
+    fprintf(fp, "\nset_skampi_buffer(%dKB)\n", atoi(msg_size)*atoi(num_proc)/1000+1);
+    fprintf(fp, "\ncomm = MPI_COMM_WORLD\n");
+    fprintf(fp, "\nbegin measurement \"MPI %s\" ", coll_ops[op_num]);
+    if(op_num == 0)
+    {
+        fprintf(fp, 
+                "\n    measure comm %s(%s, MPI_BYTE, 0)", 
+                coll_ops[op_num], 
+                msg_size);
+    }
+    else if(op_num == 1)
+    {
+        fprintf(fp, 
+                "\n    measure comm %s()", 
+                coll_ops[op_num]);
+    }
+    else if(op_num == 2)
+    {
+        fprintf(fp, 
+                "\n    measure comm %s(%d, MPI_INT, %s, 0)", 
+                coll_ops[op_num], 
+                atoi(msg_size)/4, 
+                operation);
+    }
+    else if(op_num == 3)
+    {
+        fprintf(fp, 
+                "\n    measure comm %s(%s/4, MPI_INT, %s)", 
+                coll_ops[op_num], 
+                msg_size, 
+                operation);
+    }
+    else if(op_num == 4 || op_num == 6 || op_num == 10 || op_num ==11)
+    {
+        fprintf(fp, 
+                "\n    measure comm %s(%s, MPI_BYTE, %s , MPI_BYTE,  0)", 
+                coll_ops[op_num], 
+                msg_size, 
+                msg_size);
+    }
+    else 
+    {
+        fprintf(fp, 
+                "\n    measure comm %s(%s, MPI_BYTE, %s , MPI_BYTE)", 
+                coll_ops[op_num], 
+                msg_size, 
+                msg_size);
+    }
+
+    fprintf(fp, "\nend measurement");
+
+    fclose(fp);
+}
+
 static void print_usage ()
 {
     printf ("Usage: \n");
@@ -592,7 +716,7 @@ static void print_usage ()
     printf ("-v (verbose output)\n");
     printf ("-s (status output)\n");
     printf ("-n (silent/no output)\n");
-    printf ("-t test (name of test, Current supported: Netpipe)\n");
+    printf ("-t test (name of test, Current supported: Netpipe and Skampi)\n");
     printf ("-w test_path (path to the test on your system)\n");
     printf ("-l message_length\n");
     printf ("-h hostfile\n");
@@ -601,4 +725,8 @@ static void print_usage ()
     printf ("-o output_dir\n");
     printf ("-b interrupt_file (file to write data to when interrupted)\n");
     printf ("-r interrupt_file (the file where contains the data to resume execution)\n");
+    printf ("-c Collective operation number (0- Bcast, 1- Barrier, 2- Reduce, 3- Allreduce, 4- Gather, 5- Allgather,");
+    printf (" 6- Gatherv, 7-  Allgatherv, 8- Alltoall, 9- Alltoallv, 10- Scatter, 11- Scatterv)\n");
+    printf ("-a Number of processes\n");
+    printf ("-e Operation for Reduce/Allreduce like MPI_MAX\n");
 }

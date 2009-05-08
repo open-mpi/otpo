@@ -24,7 +24,7 @@ static int push (int);
 static int set_mpi_arguments (char ***);
 static int update_adcl_request (ADCL_Request);
 
-unsigned int  TIMEOUT = 10;
+unsigned int  TIMEOUT = 200;
 int rpn_stack [RPN_MAX_ELEMENTS];
 int rpn_stack_position;
 
@@ -60,7 +60,9 @@ void otpo_test_func (ADCL_Request req)
     else if (0 == pid) /* Child Process */
     {
         char ** mpi_args; /* argument list to execvp */
-        char env[LINE_SIZE]; /* environment variables (parameters set) */
+        /* environment variables (parameters set) */
+        char env[LINE_SIZE];
+        char env_value[LINE_SIZE]; 
 
         pid = setsid();
         if (!debug) 
@@ -78,11 +80,11 @@ void otpo_test_func (ADCL_Request req)
             printf ("***********************************\n");
             printf ("Exporting...\n");
         }
+
         for (i=0 ; i<attrs_num ; i++) 
         {
             strcpy (env, "OMPI_MCA_");
             strcat (env, attrs_names[i]);
-            strcat (env, "=");
             for (j=0 ; j<attrs_num ; j++)
             {
                 virtual = 0;
@@ -113,7 +115,7 @@ void otpo_test_func (ADCL_Request req)
                 token = strtok (attrs_values_names[i],"$");
                 if ('$' != attrs_values_names[i][0])
                 {
-                    strcat(env,token);
+                    strcat(env_value,token);
                     token = strtok (NULL, "$");
                 }
                 while (NULL != token)
@@ -122,7 +124,7 @@ void otpo_test_func (ADCL_Request req)
                     {
                         if (0 == strcmp(attrs_names[m],token))
                         {
-                            strcat(env,attrs_values_names[m]);
+                            strcat(env_value,attrs_values_names[m]);
                             break;
                         }
                     }
@@ -136,21 +138,23 @@ void otpo_test_func (ADCL_Request req)
                     {
                         break;
                     }
-                    strcat(env,token);
+                    strcat(env_value,token);
                     token = strtok (NULL, "$");
                 }
             }
             else 
             {
-                strcat (env, attrs_values_names[i]);
+                strcpy (env_value, attrs_values_names[i]);
             }
+            
             if (debug) 
             {
-                printf ("%d:  %s\n",i,env);
+                printf ("%d:  %s=%s\n",i,env, env_value);
             }
-            if (0 > putenv(env)) 
+	    
+            if (0>setenv(env,env_value,1))
             {
-                perror ("PUTENV Failed");
+                perror ("SETENV Failed");
                 exit (errno);
             }
         }
@@ -185,10 +189,11 @@ void otpo_test_func (ADCL_Request req)
         if (debug) 
         {
             printf ("Executing now...\n");
-        }
+	}
 
         close (pipefd[0]); /* close reading end of pipe */
         fcntl (pipefd[1], F_SETFD, FD_CLOEXEC);
+	
 
         if (-1 == (code = execvp ("mpirun", mpi_args))) 
         {
@@ -612,7 +617,7 @@ static int set_mpi_arguments (char *** mpi_args)
     (*mpi_args) = (char **)malloc(sizeof(char*) * (mca_args_len + 20));
     (*mpi_args)[0] = "mpirun";
     (*mpi_args)[1] = "-np";
-    (*mpi_args)[2] = "2";
+    (*mpi_args)[2] = num_proc;
     for (i=3 ; i<mca_args_len+3 ; i++)
     {
         (*mpi_args)[i] = mca_args[i-3];
@@ -636,15 +641,27 @@ static int set_mpi_arguments (char *** mpi_args)
     (*mpi_args)[i++] = "--mca";
     (*mpi_args)[i++] = "mpi_paffinity_alone";
     (*mpi_args)[i++] = "1";
-#endif
+#endif 
+    
     (*mpi_args)[i++] = test_path;
-    (*mpi_args)[i++] = "-l";
-    (*mpi_args)[i++] = msg_size;
-    (*mpi_args)[i++] = "-u";
-    (*mpi_args)[i++] = msg_size;
-    (*mpi_args)[i++] = "-p 0";
-    (*mpi_args)[i++] = NULL;
+    if (!strcasecmp(test,"Netpipe"))
+    {
+        (*mpi_args)[i++] = "-l";
+        (*mpi_args)[i++] = msg_size;
+        (*mpi_args)[i++] = "-u";
+        (*mpi_args)[i++] = msg_size;
+        (*mpi_args)[i++] = "-p 0";
+    }
+    else if (!strcasecmp(test,"skampi"))
+    {
+        (*mpi_args)[i++] = "-i";
+        (*mpi_args)[i++] = "skampi.ski"; 
+        (*mpi_args)[i++] = "-o";
+        (*mpi_args)[i++] = "skampi.sko";
+    }
 
+    (*mpi_args)[i++] = NULL;
+    
     return SUCCESS;
 }
 
@@ -654,31 +671,67 @@ static int update_adcl_request (ADCL_Request req)
     char *tok;
     double latency;
     FILE *fp;
-    
- open1: 
-    fp = fopen ("np.out", "r");
-    if (NULL == fp) 
+   
+    if(!strcasecmp(test,"skampi"))
     {
-        if (EINTR == errno)
+      open:
+        fp = fopen ("skampi.sko","r");
+        if (NULL == fp)
         {
-            /* try again */
-            goto open1;
+            if (EINTR == errno)
+            {
+                /* try again */
+                goto open;
+            }
+            printf ("--> Can't open skampi.sko");
+            return FAIL;
         }
-        printf ("Can't open file np.out");
-        return FAIL;
-    }
-    while (NULL != fgets (line, LINE_SIZE, fp)) 
-    {
+
+        fgets (line, LINE_SIZE, fp);
+        fgets (line, LINE_SIZE, fp);
+        fgets (line, LINE_SIZE, fp);
+	
+        
+        fgets (line, LINE_SIZE, fp);
         tok = strtok (line," \t");
         tok = strtok (NULL," \t");
-        tok = strtok (NULL," \t");
         latency = strtod (tok,NULL);
-        if (debug) 
+        if (debug)
         {
-            printf ("latency = %f usec\n",latency*1000000);
+	    printf ("Time taken = %f usec\n",latency);
         }
-        ADCL_Request_update (req, latency*1000000);
-    }
-    fclose (fp);
+        
+        ADCL_Request_update (req, latency);
+        remove("skampi.sko");
+    } 
+    else if if(!strcasecmp(test,"netpipe"))
+    {
+      open1: 
+        fp = fopen ("np.out", "r");
+        if (NULL == fp) 
+        {
+            if (EINTR == errno)
+            {
+                /* try again */
+                goto open1;
+            }
+            printf ("Can't open file np.out");
+            return FAIL;
+        }
+        while (NULL != fgets (line, LINE_SIZE, fp)) 
+        {
+            tok = strtok (line," \t");
+            tok = strtok (NULL," \t");
+            tok = strtok (NULL," \t");
+            latency = strtod (tok,NULL);
+            if (debug) 
+            {
+                printf ("latency = %f usec\n",latency*1000000);
+            }
+            ADCL_Request_update (req, latency*1000000);
+        }
+    }   
+    
+    fclose(fp);
     return SUCCESS;
 }
