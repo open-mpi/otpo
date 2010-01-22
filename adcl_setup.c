@@ -704,7 +704,7 @@ static int update_adcl_request (ADCL_Request req)
         ADCL_Request_update (req, latency);
         remove("skampi.sko");
     } 
-    else if if(!strcasecmp(test,"netpipe"))
+    else if(!strcasecmp(test,"netpipe"))
     {
       open1: 
         fp = fopen ("np.out", "r");

@@ -563,8 +563,8 @@ int ADCL_request_get_functions_with_average ( ADCL_request_t *req,
     ADCL_fnctset_t *fnctset = req->r_emethod->em_orgfnctset;
     
     for ( i=0; i<fnctset->fs_maxnum; i++ ) {
-        if ( (fabs(filtered_average) * 0.001) >= 
-             fabs(filtered_average - req->r_emethod->em_stats[i]->s_gpts[1]) ) {
+        if ( (req->r_emethod->em_stats[i]->s_gpts[1]>= filtered_average) &&
+             (req->r_emethod->em_stats[i]->s_gpts[1]< filtered_average+0.01) ) {
             (*number_functions) ++;
         }
     }
@@ -593,8 +593,8 @@ int ADCL_request_get_functions_with_average ( ADCL_request_t *req,
     }
     i = 0;
     for ( n=0; n<fnctset->fs_maxnum; n++ ) {
-        if ( (fabs(filtered_average) * 0.001) >= 
-             fabs(filtered_average - req->r_emethod->em_stats[n]->s_gpts[1]) ) {
+        if ( (req->r_emethod->em_stats[n]->s_gpts[1]>= filtered_average) &&
+             (req->r_emethod->em_stats[n]->s_gpts[1]< filtered_average+0.01) ) {
             if (NULL != function_name) {
                 (*function_name)[i] = strdup(fnctset->fs_fptrs[n]->f_name);
             }
