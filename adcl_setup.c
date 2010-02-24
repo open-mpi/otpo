@@ -12,6 +12,10 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
+#include <unistd.h>
+
+#include <sys/stat.h>
+
 #include "otpo.h"
 
 static int check_child_died (pid_t);
@@ -32,7 +36,7 @@ int rpn_stack_position;
 void otpo_test_func (ADCL_Request req) 
 {
     int attrs_num, *attrs_values_num;
-    int i,k,m,j,code,rc;
+    int i,k,m,j,code,rc, fd;
     int virtual, aggregate;
     char *function_name;
     char **attrs_names;
@@ -40,7 +44,9 @@ void otpo_test_func (ADCL_Request req)
     pid_t pid;
     int pipefd[2];
     char c;
-    
+    char cmd[100];
+    FILE *pfp = NULL;
+
     if (pipe (pipefd) < 0) 
     {
         if (errno == EMFILE)
@@ -193,14 +199,23 @@ void otpo_test_func (ADCL_Request req)
 
         close (pipefd[0]); /* close reading end of pipe */
         fcntl (pipefd[1], F_SETFD, FD_CLOEXEC);
-	
-
-        if (-1 == (code = execvp ("mpirun", mpi_args))) 
-        {
+        /* Put here benchmarks with no output file option */
+	if (OTPO_TEST_NPB == test) {
+            if((fd = open("npb.out", O_RDWR | O_CREAT, S_IRWXU ))==-1){ /*open the file */
+                perror("open");
+                return ;
+            }
+            dup2(fd,STDOUT_FILENO); /*copy the file descriptor fd into standard output*/
+            dup2(fd,STDERR_FILENO); /* same, for the standard error */
+            close(fd); /* close the file descriptor as we don't need it more  */
+        }    
+        if (-1 == (code = execvp ("mpirun",  mpi_args))) {
             perror ("EXECVP failed");
             write (pipefd[1], &code, sizeof(int));
             exit (1);
         }
+        
+
     }
     else /* Parent Process */
     {    
@@ -354,7 +369,7 @@ int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions,
 {
     int i, count, more, attr_vals[num_parameters];
     ADCL_Function functions[num_functions];
-
+    char fnctset_name[20];
     for (i=0 ; i<num_parameters ; i++) 
     {
         attr_vals[i] = list_params[i].possible_values[0];
@@ -368,7 +383,7 @@ int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions,
         if (check_rpn (attr_vals))
         {
             ADCL_Function_create ((ADCL_work_fnct_ptr *)otpo_test_func, attrset, 
-                                  attr_vals, test, &functions[count++]);
+                                  attr_vals, (char *)tests_names[test], &functions[count++]);
         }
         else {
             if (debug)
@@ -382,8 +397,9 @@ int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions,
             }
         }
         more = get_next_combination (attr_vals);
-    }    
-    ADCL_Fnctset_create (count, functions, "NETPIPE FNCTSET", fnctset);
+    }
+    sprintf(fnctset_name, "%s FNCTSET",  tests_names[test]);
+    ADCL_Fnctset_create (count, functions, fnctset_name, fnctset);
 
     return count;
 }
@@ -612,7 +628,7 @@ static int set_mpi_arguments (char *** mpi_args)
 {
     int i;
     i = 0;
-    
+   
     /* JMS: do not use a hard-coded 20 here */
     (*mpi_args) = (char **)malloc(sizeof(char*) * (mca_args_len + 20));
     (*mpi_args)[0] = "mpirun";
@@ -627,7 +643,7 @@ static int set_mpi_arguments (char *** mpi_args)
         (*mpi_args)[i++] = "-hostfile";
         (*mpi_args)[i++] = hostf;
     }
-    else 
+    else if (OTPO_TEST_NETPIPE == test)
     {
         (*mpi_args)[i++] = "--bynode";
     }
@@ -644,20 +660,22 @@ static int set_mpi_arguments (char *** mpi_args)
 #endif 
     
     (*mpi_args)[i++] = test_path;
-    if (!strcasecmp(test,"Netpipe"))
-    {
-        (*mpi_args)[i++] = "-l";
-        (*mpi_args)[i++] = msg_size;
-        (*mpi_args)[i++] = "-u";
-        (*mpi_args)[i++] = msg_size;
-        (*mpi_args)[i++] = "-p 0";
-    }
-    else if (!strcasecmp(test,"skampi"))
-    {
-        (*mpi_args)[i++] = "-i";
-        (*mpi_args)[i++] = "skampi.ski"; 
-        (*mpi_args)[i++] = "-o";
-        (*mpi_args)[i++] = "skampi.sko";
+     switch(test) {
+     case OTPO_TEST_NETPIPE:
+         (*mpi_args)[i++] = "-l";
+         (*mpi_args)[i++] = msg_size;
+         (*mpi_args)[i++] = "-u";
+         (*mpi_args)[i++] = msg_size;
+         (*mpi_args)[i++] = "-p 0";
+         break;
+     case OTPO_TEST_SKAMPI:
+         (*mpi_args)[i++] = "-i";
+         (*mpi_args)[i++] = "skampi.ski"; 
+         (*mpi_args)[i++] = "-o";
+         (*mpi_args)[i++] = "skampi.sko";
+         break;
+     case OTPO_TEST_NPB: /* No argument so far */
+         break;
     }
 
     (*mpi_args)[i++] = NULL;
@@ -671,51 +689,18 @@ static int update_adcl_request (ADCL_Request req)
     char *tok;
     double latency;
     FILE *fp;
-   
-    if(!strcasecmp(test,"skampi"))
-    {
-      open:
-        fp = fopen ("skampi.sko","r");
-        if (NULL == fp)
-        {
-            if (EINTR == errno)
-            {
-                /* try again */
-                goto open;
-            }
-            printf ("--> Can't open skampi.sko");
-            return FAIL;
-        }
-
-        fgets (line, LINE_SIZE, fp);
-        fgets (line, LINE_SIZE, fp);
-        fgets (line, LINE_SIZE, fp);
-	
-        
-        fgets (line, LINE_SIZE, fp);
-        tok = strtok (line," \t");
-        tok = strtok (NULL," \t");
-        latency = strtod (tok,NULL);
-        if (debug)
-        {
-	    printf ("Time taken = %f usec\n",latency);
-        }
-        
-        ADCL_Request_update (req, latency);
-        remove("skampi.sko");
-    } 
-    else if(!strcasecmp(test,"netpipe"))
-    {
-      open1: 
+    switch(test) {
+    case OTPO_TEST_NETPIPE:
+    open: 
         fp = fopen ("np.out", "r");
         if (NULL == fp) 
         {
             if (EINTR == errno)
             {
                 /* try again */
-                goto open1;
+                goto open;
             }
-            printf ("Can't open file np.out");
+            printf ("Can't open file np.out\n");
             return FAIL;
         }
         while (NULL != fgets (line, LINE_SIZE, fp)) 
@@ -730,6 +715,57 @@ static int update_adcl_request (ADCL_Request req)
             }
             ADCL_Request_update (req, latency*1000000);
         }
+        break;
+    case OTPO_TEST_SKAMPI:
+    open1:
+        fp = fopen ("skampi.sko","rwq");
+        if (NULL == fp)
+        {
+            if (EINTR == errno)
+            {
+                /* try again */
+                goto open1;
+            }
+            printf ("--> Can't open skampi.sko\n");
+            return FAIL;
+        }
+
+        fgets (line, LINE_SIZE, fp);
+        fgets (line, LINE_SIZE, fp);
+        fgets (line, LINE_SIZE, fp);
+	     
+        fgets (line, LINE_SIZE, fp);
+        tok = strtok (line," \t");
+        tok = strtok (NULL," \t");
+        latency = strtod (tok,NULL);
+        if (debug)
+        {
+	    printf ("Time taken = %f usec\n",latency);
+        }
+        
+        ADCL_Request_update (req, latency);
+        remove("skampi.sko");
+        break;
+    case OTPO_TEST_NPB:
+	open2:
+        fp = fopen ("npb.out", "r");
+        if (NULL == fp)
+        {
+            if (EINTR == errno)
+            {
+                /* try again */
+		goto open2;
+            }
+            printf ("--> Can't open npb.out\n");
+            return FAIL;
+        }
+        fseek ( fp , -875 , SEEK_END );
+        fgets (line, LINE_SIZE, fp);
+        tok = strtok (line," \t");
+        latency = strtod (tok,NULL);
+        ADCL_Request_update (req, latency);
+        remove("npb.out");
+        break;
     }   
     
     fclose(fp);

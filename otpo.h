@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2007 Cisco, Inc. All rights reserved.
  */
-#ifndef __PARSER_H__
-#define __PARSER_H__
+#ifndef __OTPO_H__
+#define __OTPO_H__
 
 #include "ADCL.h"
 #include "otpo_config.h"
@@ -17,7 +17,7 @@ int debug;
 int verbose;
 int status;
 char *msg_size;
-char *test;
+int test;
 char *test_path;
 char **mca_args;
 int mca_args_len;
@@ -26,6 +26,7 @@ time_t stamp;
 int op_num;
 char *num_proc;
 char *operation;
+char *tests_names[3];
 
 /* enum to the error codes that can be returned */
 enum otpo_error_codes
@@ -127,6 +128,10 @@ struct otpo_param_list_t
 #define OTPO_PARAM_SET_VIRTUAL(_param) ( (_param).otpo_flags |= OTPO_PARAM_VIRTUAL)
 #define OTPO_PARAM_SET_AGGREGATE(_param) ( (_param).otpo_flags |= OTPO_PARAM_AGGREGATE)
 
+#define OTPO_TEST_NETPIPE      0
+#define OTPO_TEST_SKAMPI       1
+#define OTPO_TEST_NPB          2
+
 int otpo_initialize_list (char *file_name);
 int otpo_free_list_params_objects ();
 int otpo_get_num_parameters (char *file_name);
@@ -140,4 +145,4 @@ int otpo_write_interrupt_data (int num_tested, double *results,
 int otpo_read_interrupt_data (char *backup_file, int *num_tested, double **results);
 int otpo_dump_list ();
 void otpo_test_func (ADCL_Request req);
-#endif /* __PARSER_H__*/
+#endif /* __OTPO_H__*/

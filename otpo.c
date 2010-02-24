@@ -23,7 +23,7 @@ time_t t1, t2, et1, et2;
 int main(int argc , char *argv[]) 
 {
     int i, k, num_comb, hr, min, sec;
-    int num_tested, current_winner, resume, num_functions;
+    int num_tested, current_winner, resume, num_functions, testing;
     char *input_file = NULL, *output_dir = NULL;
     char *interrupt_file = NULL;
     float current;
@@ -64,7 +64,7 @@ int main(int argc , char *argv[])
     debug = 0;
     mca_args_len = 0;
     hostf = NULL;
-    test = NULL;
+    test = 0;
     test_path = NULL;
     msg_size = NULL;
     resume = 0;
@@ -72,6 +72,11 @@ int main(int argc , char *argv[])
     op_num = 0;
     num_proc = NULL;
     operation = NULL;
+    testing = 1;
+
+    tests_names[0] = strdup("Netpipe");
+    tests_names[1] = strdup("SKaMPI");
+    tests_names[2] = strdup("NPB");
 
     if (SUCCESS != set_mca_options (argc, argv)) 
     {
@@ -116,9 +121,16 @@ int main(int argc , char *argv[])
             debug = 1;
             break;
         case 't':
-            test = strdup (optarg);
-            if (strcasecmp (test,"Netpipe") && strcasecmp (test,"skampi"))
-            {
+            if ( !strcasecmp (optarg,"Netpipe")) {
+                test = OTPO_TEST_NETPIPE;
+            }
+            else if ( !strcasecmp (optarg,"skampi")) {
+                test = OTPO_TEST_SKAMPI;
+            }
+            else if ( !strcasecmp (optarg,"NPB")) {
+                test = OTPO_TEST_NPB;
+            }
+            else {
                 printf ("Invalid Test Name\n");
                 exit (1);
             }
@@ -191,9 +203,9 @@ int main(int argc , char *argv[])
         msg_size = strdup ("1024");
     }
 
-    if (NULL == test)
+    if (0 == test)
     {
-        test = strdup ("Netpipe");
+        test = OTPO_TEST_NETPIPE;
     }
     
     if (NULL == num_proc) 
@@ -201,7 +213,7 @@ int main(int argc , char *argv[])
         num_proc = strdup ("2");
     }
 
-    if ((NULL == operation)&& !(strcasecmp(test, "skampi")))
+    if ((NULL == operation)&& (OTPO_TEST_SKAMPI == test)) 
     {
         operation = strdup ("MPI_MAX");
     }
@@ -214,15 +226,16 @@ int main(int argc , char *argv[])
         printf ("In case I detect an interrupt, I will write my data to %s\n", 
                 interrupt_file);
         printf ("The Test case will be using %s, with %s byte messages\n",
-                test,msg_size); 
-        if(!strcasecmp(test, "skampi"))
+                tests_names[test],msg_size); 
+
+        if(OTPO_TEST_SKAMPI == test)
         {
             printf("I will use the operation of number %d with %s number of processes\n", 
                    op_num, num_proc);
         }
     }
 
-    if( !strcasecmp(test,"skampi"))
+    if(OTPO_TEST_SKAMPI == test)
     {
         create_skampi_ipfile();
     }
@@ -290,10 +303,12 @@ int main(int argc , char *argv[])
     {
         printf("Number of possible combinations: %d\n",num_comb);
     }
-
+    /* For new version of ADCL
+    ADCL_Topology_create_generic (0, 0, NULL, NULL, NULL, NULL, ADCL_DIRECTION_BOTH,
+                                  MPI_COMM_WORLD, &ADCL_param_topo);
+    */
     ADCL_Topology_create_generic (0, NULL, NULL, NULL, ADCL_DIRECTION_BOTH,
                                   MPI_COMM_WORLD, &ADCL_param_topo);
-
     ADCL_Request_create (ADCL_VECTOR_NULL, ADCL_param_topo, ADCL_param_fnctset, 
                          &ADCL_param_request);
 
@@ -351,7 +366,7 @@ int main(int argc , char *argv[])
        to switch into the decision state. The last function executed is the 
        winner function 
     */
-    for (i=num_tested ; i<num_comb+1 ; i++) 
+    for (i=num_tested ; (i<num_comb+1) && testing ; i++) 
     {
         if (status || verbose || debug) 
         {
@@ -365,6 +380,9 @@ int main(int argc , char *argv[])
         if (0 == stop_signal)
         {
             ADCL_Request_start (ADCL_param_request);
+            /* For ADCL versions with 2k support
+            ADCL_Request_get_state(ADCL_param_request, &testing);
+            */
         }
         else if (1 == stop_signal && 1 < i)
         {
@@ -440,10 +458,6 @@ int main(int argc , char *argv[])
     {
         free (list_params);
     }
-    if (NULL != test) 
-    {
-        free (test);
-    }
     if (NULL != msg_size) 
     {
         free (msg_size);
@@ -461,7 +475,7 @@ int main(int argc , char *argv[])
     {
         free (hostf);
     }
-    if(!strcasecmp(test,"skampi"))
+    if(OTPO_TEST_SKAMPI == test)
     {
         if (NULL != operation) 
         {
@@ -479,21 +493,15 @@ int main(int argc , char *argv[])
     hr = 0;
     min = 0;
     sec = (int)difftime (et2, et1);
-    if (3600 < sec)
+    if (3600 <= sec)
     {
         hr = sec/3600;
-        if (0 < sec%3600)
-        {
-            sec = sec - hr*3600 ;
-        }
+        sec = sec%3600;
     }
-    if (60 < sec)
+    if (60 <= sec)
     {
         min = sec/60;
-        if (0 < sec%60)
-        {
-            sec = sec - min*60 ;
-        }
+        sec = sec%60;
     }
     printf ("Time Elapsed: %d hrs %d min %d sec\n", hr, min, (int)sec);
     return 0;
@@ -586,7 +594,7 @@ int otpo_dump_list ()
     for (i=0 ; i<num_parameters ; i++) 
     {
         printf ("Name: %s\n",list_params[i].name);
-        printf ("Number of Vales: %d\n", list_params[i].num_values);
+        printf ("Number of Values: %d\n", list_params[i].num_values);
         if (NULL != list_params[i].default_value) 
         {
             printf ("Default: %s\n",list_params[i].default_value);
@@ -716,7 +724,7 @@ static void print_usage ()
     printf ("-v (verbose output)\n");
     printf ("-s (status output)\n");
     printf ("-n (silent/no output)\n");
-    printf ("-t test (name of test, Current supported: Netpipe and Skampi)\n");
+    printf ("-t test (name of test, Current supported: Netpipe, Skampi and NPB)\n");
     printf ("-w test_path (path to the test on your system)\n");
     printf ("-l message_length\n");
     printf ("-h hostfile\n");
