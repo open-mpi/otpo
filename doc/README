@@ -64,9 +64,10 @@ the following options for each parameter:
 A sample file (OpenIB_Parameters) is included for convenience.
 
 Next the user needs to have a benchmark compiled and ready to run
-somewhere. Currently OTPO supports 2 benchmarks, Netpipe and
-Skampi. However it's not hard to write a plugin for another benchmark,
-since the design is modular.
+somewhere. Currently OTPO supports 2 benchmarks, Netpipe and Skampi
+(5.0.1 is required for otpo to work with skampi). However it's not
+hard to write a plugin for another benchmark, since the design is
+modular.
 
 After specifying the list of parameters, the user is ready to run
 OTPO. The usage options for running OTPO are:
