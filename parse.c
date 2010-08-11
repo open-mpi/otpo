@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2007 Cisco, Inc. All rights reserved.
+ * Copyright (c) 2010 University of Houston, Inc. All rights reserved.
  */
 #include <stdlib.h>
 #include <stdio.h>

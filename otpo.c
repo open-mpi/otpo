@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2007 Cisco, Inc. All rights reserved.
+ * Copyright (c) 2010 University of Houston, Inc. All rights reserved.
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,13 +17,14 @@ void handler (int);
 void create_skampi_ipfile(void);
 static int get_num_combinations ();
 static int set_mca_options (int, char**);
+static int get_result_files (int, char**);
 static void print_usage (void);
 int stop_signal;
 time_t t1, t2, et1, et2;
 
 int main(int argc , char *argv[]) 
 {
-    int i, k, num_comb, hr, min, sec;
+    int i, k, num_comb, hr, min, sec, generate_input_file;
     int num_tested, current_winner, resume, num_functions, testing;
     char *input_file = NULL, *output_dir = NULL;
     char *interrupt_file = NULL;
@@ -33,26 +35,29 @@ int main(int argc , char *argv[])
     ADCL_Fnctset ADCL_param_fnctset;
     ADCL_Topology ADCL_param_topo;
     ADCL_Request ADCL_param_request;
+
     /* options */
     static struct option long_opts[] = 
     {
-        { "params", required_argument, NULL, 'p' },
-        { "test", required_argument, NULL, 't' },
-        { "test_path", required_argument, NULL, 'w' },
-        { "verbose", no_argument, NULL, 'v' },
-        { "status", no_argument, NULL, 's' },
-        { "debug", no_argument, NULL, 'd' },
-        { "silent", no_argument, NULL, 'n' },
-        { "message_length", required_argument, NULL, 'l' }, 
-        { "hostfile", required_argument, NULL, 'h' },
-        { "mca", required_argument, NULL, 'm' },
-        { "format", required_argument, NULL, 'f' },
-        { "out", required_argument, NULL, 'o' },
-        { "backup", required_argument, NULL, 'b' },
-        { "resume", required_argument, NULL, 'r' },
-        { "collective_operation", required_argument, NULL, 'c'},
-        { "number_of_processes", required_argument, NULL, 'a'},
-        { "Operation", required_argument, NULL, 'e'},
+        { "verbose",              no_argument, NULL, 'v' },
+        { "status",               no_argument, NULL, 's' },
+        { "debug",                no_argument, NULL, 'd' },
+        { "silent",               no_argument, NULL, 'n' },
+
+        { "params",               required_argument, NULL, 'p' },
+        { "test",                 required_argument, NULL, 't' },
+        { "test_path",            required_argument, NULL, 'w' },
+        { "message_length",       required_argument, NULL, 'l' }, 
+        { "hostfile",             required_argument, NULL, 'h' },
+        { "mca",                  required_argument, NULL, 'm' },
+        { "format",               required_argument, NULL, 'f' },
+        { "out",                  required_argument, NULL, 'o' },
+        { "backup",               required_argument, NULL, 'b' },
+        { "resume",               required_argument, NULL, 'r' },
+        { "collective_operation", required_argument, NULL, 'c' },
+        { "number_of_processes",  required_argument, NULL, 'a' },
+        { "operation",            required_argument, NULL, 'e' },
+        { "generate_input_file",  required_argument, NULL, 'x' },
         { NULL, 0, NULL, 0 }
     };
 
@@ -73,6 +78,7 @@ int main(int argc , char *argv[])
     num_proc = NULL;
     operation = NULL;
     testing = 1;
+    generate_input_file = 0;
 
     tests_names[0] = strdup("Netpipe");
     tests_names[1] = strdup("SKaMPI");
@@ -84,8 +90,17 @@ int main(int argc , char *argv[])
         exit(1);
     }
 
-    while (-1 != (i = getopt_long (argc, argv, "p:t:w:vsndl:m:h:g:o:f:r:b:c:a:e:", 
-                                   long_opts, NULL))) 
+    if (SUCCESS != get_result_files (argc, argv)) 
+    {
+        fprintf(stderr, "Invalid result files");
+        exit(1);
+    }
+
+    while (-1 != (i = getopt_long (argc, 
+                                   argv, 
+                                   "p:t:w:vsndl:m:h:g:o:f:r:b:c:a:e:x:",
+                                   long_opts, 
+                                   NULL))) 
     {
         switch (i) 
         {
@@ -168,10 +183,18 @@ int main(int argc , char *argv[])
         case 'e':
             operation = strdup (optarg);
             break;
+        case 'x':
+            generate_input_file = 1;
+            break;
         default: 
             print_usage();
             exit (1);
         }
+    }
+
+    if (generate_input_file) {
+        otpo_generate_input_file (output_dir);
+        return 0;
     }
 
     if (NULL == input_file)
@@ -587,6 +610,52 @@ static int set_mca_options (int argc, char **argv)
     return SUCCESS;
 }
 
+/*
+ * Function to get the result files that need to analyzed andtransformed \
+ * into input files
+ */
+static int get_result_files (int argc, char **argv) 
+{
+    int i,k;
+
+    for (i=0 ; i<argc ; i++) 
+    {
+        if (0 == strcmp (argv[i],"--generate_input_file") || 
+            0 == strcmp (argv[i], "-x"))
+        {
+            while ('-' != argv[++i][0]) 
+            {
+                num_result_files ++;
+                if (argc == i+1) 
+                    break;
+            }
+            i --;
+        }
+    }
+    result_files = (char **)malloc(sizeof(char *) * num_result_files);
+    if (NULL == result_files) 
+    {
+        return NO_MEMORY;
+    }
+    k = 0;
+    for (i=0 ; i<argc ; i++)
+    {
+        if (0 == strcmp (argv[i],"--generate_input_file") || 
+            0 == strcmp (argv[i], "-x"))
+        {
+            while ('-' != argv[++i][0]) 
+            {
+                result_files[k++] = strdup(argv[i]);
+                if (argc == i+1) 
+                    break;
+            }
+            i --;
+        }
+    }
+
+    return SUCCESS;
+}
+
 int otpo_dump_list ()
 {
     int i,k;
@@ -736,5 +805,5 @@ static void print_usage ()
     printf ("-c Collective operation number (0- Bcast, 1- Barrier, 2- Reduce, 3- Allreduce, 4- Gather, 5- Allgather,");
     printf (" 6- Gatherv, 7-  Allgatherv, 8- Alltoall, 9- Alltoallv, 10- Scatter, 11- Scatterv)\n");
     printf ("-a Number of processes\n");
-    printf ("-e Operation for Reduce/Allreduce like MPI_MAX\n");
+    printf ("-e operation for Reduce/Allreduce like MPI_MAX\n");
 }

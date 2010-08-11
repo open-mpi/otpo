@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2007 Cisco, Inc. All rights reserved.
+ * Copyright (c) 2010 University of Houston, Inc. All rights reserved.
  */
 #ifndef __OTPO_H__
 #define __OTPO_H__
@@ -21,6 +22,8 @@ int test;
 char *test_path;
 char **mca_args;
 int mca_args_len;
+char **result_files;
+int num_result_files;
 char *hostf;
 time_t stamp;
 int op_num;
@@ -143,6 +146,7 @@ int otpo_analyze_results (char *output_file, int num_functions);
 int otpo_write_interrupt_data (int num_tested, double *results, 
                                int current_winner, char *backup_file);
 int otpo_read_interrupt_data (char *backup_file, int *num_tested, double **results);
-int otpo_dump_list ();
+int otpo_dump_list (void);
 void otpo_test_func (ADCL_Request req);
+int otpo_generate_input_file (char *);
 #endif /* __OTPO_H__*/

@@ -6,4 +6,4 @@ if WANT_INTERNAL_ADCL
 endif
 
 bin_PROGRAMS = otpo
-otpo_SOURCES = parse.c otpo.c adcl_setup.c output.c otpo.h
+otpo_SOURCES = generate_input_file.c parse.c otpo.c adcl_setup.c output.c otpo.h
