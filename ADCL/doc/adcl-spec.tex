@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage{lineno}
+%\usepackage{epsf}
+\usepackage[pdftex]{graphicx}
+\usepackage{headerfooter}
+
+
+%\setlength{\parindent}{0.em}
+
+\def\rationale#1{
+  \vspace{0.5em}
+  \hspace{1cm}
+%  \newlength{\mylength}
+%  \setlength{\mylength}{\textwidth}
+%  \addtolength{\mylength}{-1.cm}
+  \begin{minipage}{11cm}
+    ~\newline
+    {\sl Rationale:}
+    \textnormal{#1}
+  \end{minipage}
+  \newline\vspace{0.5em}
+}
+
+\def\advicetousers#1{
+  \vspace{0.5em}
+  \hspace{1cm}
+  \begin{minipage}{11cm}
+    ~\newline
+    {\sl Advice to users:}
+    \textnormal{#1}
+  \end{minipage}
+  \newline\vspace{0.5em}
+}
+
+\def\advicetoimpl#1{
+  \vspace{0.5em}
+  \hspace{1cm}
+  \begin{minipage}{11cm}
+    ~\newline
+    {\sl Advice to implementors:}
+    \textnormal{#1}
+  \end{minipage}
+  \newline\vspace{0.5em}
+}
+
+\def\fordiscussion#1{
+  \vspace{0.5em}
+  \hspace{1cm}
+  \begin{minipage}{11cm}
+    ~\newline
+    {\sl For discussion:}
+    \textnormal{#1}
+  \end{minipage}
+  \newline\vspace{0.5em}
+}
+
+
+\DeclareOption{pagewise}{\setpagewiselinenumbers
+  \realpagewiselinenumbers}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\include{title}
+\include{abstract}
+
+\tableofcontents
+\cleardoublepage
+
+
+\pagewiselinenumbers
+\include{introduction}
+
+\include{environment}
+\include{attribute}
+\include{function}
+\include{topology}
+\include{vector}
+\include{request}
+
+%\include{conclusions}
+\bibliographystyle{unsrt}
+\bibliography{adcl-spec}
+\end{document}

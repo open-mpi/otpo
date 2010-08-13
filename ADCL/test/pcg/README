@@ -1,0 +1,9 @@
+ - pcg: a fault tolerant implementation of a parallel conjugant 
+        gradient solver taken from the Harness 1.0.1 distribution.
+
+ Note. For the pcg example, users need to edit the pcg/main.c file
+ to set the path to the initial matrix correctly. It is recommended
+ that you use a fully qualified path. Also note, that additionally
+ to the small input file available here, I do have a number of larger 
+ ones, that I simply do not want to commit to the svn server due to
+ their size.

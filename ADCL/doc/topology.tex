@@ -1,0 +1,90 @@
+\section{Topology}
+
+An {\tt ADCL\_Topology} objects contains the description of the process topology and neighborhood relations within the application. The reason ADCL introduces this abstraction and does not rely entirely on the MPI cartesian communicators is, that many codes have a multi-dimensional process distribution, where the process dimensions are running in a different order compared to a cartesion MPI communicator. Thus, ADCL provides a topology constructor using MPI cartesion communicators, but also a generic constructor, where the user can define for each process who its neighbors are.
+
+\begin{verbatim}
+int ADCL_Topology_create  ( MPI_Comm cart_comm, 
+    ADCL_Topology *topo);
+
+subroutine ADCL_Topology_create ( cart_comm, topo, ierror )
+integer cart_comm, topo, ierror
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt cart\_comm}(IN): MPI cartesian communicator. A call to {\tt MPI\_Topo\_test} has to return {\tt MPI\_CART} for {\tt cart\_comm} to be valid in this function call.
+\item {\tt topo}(OUT): handle of an ADCL topology object. 
+\end{itemize}
+
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Topology_create_generic ( int ndims, int *lneighbors, 
+    int *rneighbors, int *coords, int direction,  
+    MPI_Comm comm, ADCL_Topology *topo);
+				   
+subroutine ADCL_Topology_create_generic ( ndims, lneighbors,
+    rneighbors, coords, direction, comm, topo, ierror )
+integer ndims, direction, comm, topo, ierror
+integer lneighbors(*), rneighbors(*), coords(*)				   
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt ndims}(IN): number of dimensions of the process topology.
+\item {\tt lneighbors}(IN): integer array of dimension {\tt ndims} containing the ranks
+	of the left neighbors for each dimension. In case a left neighbor does not exist (e.g. the 
+	process is at the boundary of the process topology), the according entry in the array 
+	has to be set to {\tt MPI\_PROC\_NULL}.
+\item {\tt rneighbors}(IN): integer array of dimension {\tt ndims} containing the ranks
+	of the right neighbors for each dimension. In case a right neighbor does not exist (e.g. the 
+	process is at the boundary of the process topology), the according entry in the array 
+	has to be set to {\tt MPI\_PROC\_NULL}.
+\item {\tt coords}(IN): integer array of dimension {\tt ndims} containing the coordinates 
+  of the process in the process topology.
+\item {\tt direction}(IN): ?
+\item {\tt comm}(IN): valid MPI communicator. In contrary to the previous function, this does not
+ have to be an MPI cartesian communicator.
+\item {\tt topo}(OUT): handle of an ADCL topology object.
+\end{itemize}
+
+
+\hspace{1cm}
+\begin{verbatim}
+int ADCL_Topology_free ( ADCL_Topology *topo );
+\end{verbatim}
+with
+\begin{itemize}
+\item {\tt topo}(INOUT): ADCL topology object to be released. Upon successful completion, the handle will be set to {\tt ADCL\_TOPOLOGY\_NULL}.
+\end{itemize}
+
+\subsection{Example}
+
+The following example shows how to register a 2-D process topology with ADCL for an arbitrary number of processes using MPI cartesian communicators.
+
+\begin{verbatim}
+#include <stdio.h>
+#include "ADCL.h"
+#include "mpi.h"
+
+int main ( int argc, char ** argv ) 
+{
+    MPI_Comm cart_comm;
+    ADCL_Topology topo;
+    int cdims[]={0,0}, periods[]={0,0};
+   
+    MPI_Init ( &argc, &argv );
+    ADCL_Init ();
+	  
+    MPI_Dims_create ( size, 2, cdims );
+    MPI_Cart_create ( MPI_COMM_WORLD, 2, cdims, periods, 0, 
+                      &cart_comm);
+    ADCL_Topology_create ( cart_comm, &topo );
+
+ 	  /* do something useful with the topology object */
+
+    ADCL_Topology_free ( &topo );
+    MPI_Comm_free ( &cart_comm );
+    
+    ADCL_Finalize ();
+    MPI_Finalize ();	  
+    return 0;
+}
+\end{verbatim}

@@ -326,12 +326,10 @@ int main(int argc , char *argv[])
     {
         printf("Number of possible combinations: %d\n",num_comb);
     }
-    /* For new version of ADCL
+
     ADCL_Topology_create_generic (0, 0, NULL, NULL, NULL, NULL, ADCL_DIRECTION_BOTH,
                                   MPI_COMM_WORLD, &ADCL_param_topo);
-    */
-    ADCL_Topology_create_generic (0, NULL, NULL, NULL, ADCL_DIRECTION_BOTH,
-                                  MPI_COMM_WORLD, &ADCL_param_topo);
+
     ADCL_Request_create (ADCL_VECTOR_NULL, ADCL_param_topo, ADCL_param_fnctset, 
                          &ADCL_param_request);
 
@@ -403,9 +401,7 @@ int main(int argc , char *argv[])
         if (0 == stop_signal)
         {
             ADCL_Request_start (ADCL_param_request);
-            /* For ADCL versions with 2k support
             ADCL_Request_get_state(ADCL_param_request, &testing);
-            */
         }
         else if (1 == stop_signal && 1 < i)
         {

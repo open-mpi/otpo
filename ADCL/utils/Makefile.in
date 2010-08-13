@@ -1,0 +1,45 @@
+include ../Makefile.defs
+
+
+all: eval-slurm  genscript gentex split attr_test_generator @adcl_minmax@
+
+split: 	split.c
+	$(CC) $(CFLAGS) -o split split.c 
+
+merge:	merge.c
+	$(CC) $(CFLAGS) -o merge merge.c 
+
+eval-slurm: eval-slurm.c
+	$(CC) $(CFLAGS) -o eval-slurm eval-slurm.c 
+
+genscript: genscript.c
+	$(CC) $(CFLAGS) -o genscript genscript.c 
+
+gentex: gentex.c
+	$(CC) $(CFLAGS) -o gentex gentex.c 
+
+parsefile: minmax_generic_parse_file.c
+	$(CC) $(CFLAGS) -o parsefile minmax_generic_parse_file.c 
+
+minmax: minmax.c robust.c cluster.c cluster_data.c cluster_cluster.c data.h cluster.h #nr.h nrutil.h
+	$(CC) $(CFLAGS) $(GSL_INC_FLAGS) -c robust.c # brent.c f1dim.c lnsrch.c dfpmin.c \
+             # linmin.c  mnbrak.c  nrutil.c  powell.c #amoeba.c amotry.c 
+	$(CC) $(CFLAGS) $(GSL_INC_FLAGS) -c cluster.c
+	$(CC) $(CFLAGS) $(GSL_INC_FLAGS) -c cluster_data.c
+	$(CC) $(CFLAGS) $(GSL_INC_FLAGS) -c cluster_cluster.c
+	$(CC) $(CFLAGS) $(GSL_INC_FLAGS) -o minmax minmax.c robust.o cluster_data.o \
+            cluster_cluster.o cluster.o $(GSL_LD_FLAGS)
+
+iterations: iterations.c
+	$(CC) $(CFLAGS) -o iterations iterations.c 
+
+attr_test_generator: attr_test_generator.c
+	$(CC) $(CFLAGS) -o attr_test_generator attr_test_generator.c
+
+
+clean:
+	rm -rf *.o *~ *.out
+	rm -f split merge iterations
+	rm -f genscript gentex
+	rm -f minmax eval-slurm attr_test_generator
+

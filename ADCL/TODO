@@ -1,0 +1,3 @@
+- write a (perl/python) script to automatically generate the memory management routines
+  out of ADCL_memory.c for different values of TYPE.
+
