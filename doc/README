@@ -114,12 +114,23 @@ Optional:
    10- Scatter, 
    11- Scatterv)
 -a Number of processes (if using Skampi)
--e Operation for Reduce/Allreduce like MPI_MAX (if using Skampi)
+-e Operation for Reduce/Allreduce like MPI_MAX
+-x generate an input file from an ouput result file
 
-Options that are marked with * are required for OTPO to run. A sample
-run command would be:
+A sample run command would be:
 
  ./otpo -p OpenIB_Parameters -t Netpipe -w path_to_where_netpipe_is_compiled/NPmpi
+
+The --generate_input_file (-x) option is a feature that allows a user
+to give OTPO previously generated result files. OTPO would then use
+these files to parse the parameters and the values noted as the best
+values for those parameters and generate a new input parameter file
+from them automatically. This can be done using UNION or INTERSECTION
+of the files, which should be specified with the operation parameter
+-e or --operations.
+An example to run this feature on three result file (R1 R2 and R3):
+./otpo -x R1 R2 R3 -e union -o union_input_file
+./otpo -x R1 R2 R3 -e intersection -o intersection_input_file
 
 NOTE to users that using skampi to tune parameters in the COLL
 Hierarch Module works only with OMPI trunk and 1.5 and above. As for
