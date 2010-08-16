@@ -49,43 +49,57 @@ the following options for each parameter:
 
 -d default value
 
+Option to set the possible values manually:
 -p {possible_values}: option for the user to explicitly list the
  possible values for the parameter
 
+OR to specify a range with an increment by an operation with a specific RPN:
 -r start_value end_value: specify the start and end value for the
  parameter
-
 -t traversal_method arguments: The method to traverse the range of
  variables for the parameter. increment method is only available now,
  which takes arguments the operation and the operator.
-
 -i “rpn”: RPN condition that the parameter combinations must satisfy.
 
-A sample file (OpenIB_Parameters) is included for convenience.
+A sample file (OpenIB_Parameters) is included for convenience. However
+note that the MCA parameter space for Open-MPI is always changing, so
+some parameters might be invalid or the values might not make
+sense. This is just to help with showing how the format of the input
+file is.
 
 Next the user needs to have a benchmark compiled and ready to run
-somewhere. Currently OTPO supports 2 benchmarks, Netpipe and Skampi
-(5.0.1 is required for otpo to work with skampi). However it's not
-hard to write a plugin for another benchmark, since the design is
-modular.
+somewhere. Currently OTPO supports 3 benchmarks: 
+- Netpipe 
+- Skampi (5.0.1 is required for otpo to work with skampi). 
+- NPB
+
+However it's not hard to write a plugin for another benchmark, since
+the design is modular.
 
 After specifying the list of parameters, the user is ready to run
 OTPO. The usage options for running OTPO are:
 
--p InputFileName (file that contains the parameters) *
+Required:
+-p InputFileName (file that contains the parameters)
+-t test (name of test, Current supported: Netpipe NPB Skampi)
+-w test_path (path to the test on your system and the executable. 
+   Example: -w /home/user1/Netpipe/NPmpi)
+
+Optional:
 -d (debug output)
 -v (verbose output)
 -s (status output)
 -n (silent/no output)
--t test (name of test, Current supported: Netpipe and Skampi) *
--w test_path (path to the test on your system) *
 -l message_length (default is 1 byte)
 -h hostfile
--m mca_params (mca parameters that you want your mpirun to run with)
+-m mca_params (mca parameters that you want set when running with OMPI. 
+   Note that those are not the parameters that you want to tune. Those are 
+   parameters that you want when runnning all the tests)
 -f format (format of output, TXT)
 -o output_dir (directory where the results will be placed, default: results)
--b interrupt_file (file to write data to when interrupted, default: interrupt.txt)
--r interrupt_file (the file where contains the data to resume execution) 
+-b interrupt_file (file to write intermediate data when interrupted, 
+   default: interrupt.txt)
+-r interrupt_file (the file which contains the data to resume execution) 
 -c Collective operation number (if using Skampi)
    0- Bcast, 
    1- Barrier, 
