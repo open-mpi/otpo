@@ -3,12 +3,12 @@ What is OTPO?
 OTPO (Open Tool for Parameter Optimizations) is an Open MPI specific
 tool that is meant to explore the MCA parameter space. In Open MPI,
 the user can specify at runtime many values for MCA parameters
-(ompi_info –param all all). The parameters include the OpenIB BTL
-parameters (ompi_info –param btl openib). OTPO is a tool that takes in
+(ompi_info param all all). The parameters include the OpenIB BTL
+parameters (ompi_info param btl openib). OTPO is a tool that takes in
 a list of any MCA parameters, with a user specified range of values
 for those parameters, and for every combination of the MCA parameter
 values, OTPO executes an MPI job, measuring latency (the only
-measurement available right now), bandwidth, etc… The tests used for
+measurement available right now), bandwidth, etc.. The tests used for
 the measurements are modular. Right now, only Netpipe test is
 available. OTPO outputs a list of the best parameter combinations for
 a certain test.
@@ -59,7 +59,7 @@ OR to specify a range with an increment by an operation with a specific RPN:
 -t traversal_method arguments: The method to traverse the range of
  variables for the parameter. increment method is only available now,
  which takes arguments the operation and the operator.
--i “rpn”: RPN condition that the parameter combinations must satisfy.
+-i rpn: RPN condition that the parameter combinations must satisfy.
 
 A sample file (OpenIB_Parameters) is included for convenience. However
 note that the MCA parameter space for Open-MPI is always changing, so
