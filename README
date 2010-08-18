@@ -1,17 +1,18 @@
 What is OTPO?  
 
-OTPO (Open Tool for Parameter Optimizations) is an Open MPI specific
-tool that is meant to explore the MCA parameter space. In Open MPI,
-the user can specify at runtime many values for MCA parameters
-(ompi_info param all all). The parameters include the OpenIB BTL
-parameters (ompi_info param btl openib). OTPO is a tool that takes in
-a list of any MCA parameters, with a user specified range of values
-for those parameters, and for every combination of the MCA parameter
-values, OTPO executes an MPI job, measuring latency (the only
-measurement available right now), bandwidth, etc.. The tests used for
-the measurements are modular. Right now, only Netpipe test is
-available. OTPO outputs a list of the best parameter combinations for
-a certain test.
+OTPO (Open Tool for Parameter Optimizations) is an Open MPI specific tool that
+is meant to explore the MCA parameter space. In Open MPI, the user can specify
+at runtime many values for MCA parameters, try e.g. (ompi_info --param all
+all). Alternatively, to focus on a single aspect of parameters, e.g. the
+parameters of the OpenIB BTL (ompi_info --param btl openib).
+
+OTPO is a tool that takes in a list of any MCA parameters, with a user
+specified range of values for those parameters, and for every combination of
+the MCA parameter values, OTPO executes an MPI job, measuring execution time
+(the only measurement available right now), bandwidth, etc.. The tests used
+for the measurements are modular. Right now, only Netpipe, Skampi and NAS
+Parallel Benchmarks are support out of the box. OTPO outputs a list of the
+best parameter combinations for a certain test.
 
 The main purpose of OTPO is to explore the effect of the MCA
 parameters on different machines with different architectures and
@@ -33,7 +34,7 @@ How to build OTPO?
 
 ./autogen.sh 
 
-./configure (this will configure OTPO with the included ADCL)
+./configure (this will configure OTPO with the included ADCL library)
 
 make
 
@@ -41,11 +42,11 @@ make
 
 How to run OTPO?
 
-OTPO includes an ADCL copy, but if the user has another ADCL copy on
-his machine, he/she can set the ADCL directory on configure.  The
-first thing the user needs to specify is the file containing the
-parameters. Basically the file contains the name of the parameter and
-the following options for each parameter:
+OTPO includes a copy of the ADCL library, but if the user has another copy of
+ADCL already installed on his machine, he/she can set the ADCL directory on
+configure.  The first thing the user needs to specify is the file containing
+the parameters. Basically the file contains the name of the parameter and the
+following options for each parameter:
 
 -d default value
 
@@ -135,10 +136,10 @@ An example to run this feature on three result file (R1 R2 and R3):
 NOTE to users that using skampi to tune parameters in the COLL
 Hierarch Module works only with OMPI trunk and 1.5 and above. As for
 the COLL tuned module, currently it works in OMPI version where the
-use_dynamic_rules mca parameter works correctly. The latest release of
-OMPI (1.4) does not have that working, so OTPO would not work if the
-user is trying to tune COLL_Tuned mca parameters. The main idea is
-that OTPO works if OMPI works :-)
+flag use_dynamic_rules mca parameter works correctly, as is the case for
+the 1.4 series starting from revision v1.4.2, the upcoming v1.5 series and
+trunk starting from revision 22510.   
+
 
 What are the results?
 
