@@ -47,7 +47,6 @@ all:
 	cd src/communication ; make 
 	cd src/adcl/C ; make all 
 	@fortran_make@
-	cd utils ; make all 
 	@dumpi_make@
 
 clean:
@@ -56,7 +55,6 @@ clean:
 	cd src/communication ; make clean
 	cd src/adcl/C ; make clean
 	@fortran_clean@
-	cd utils ; make clean
 	@dumpi_clean@
 	rm -rf *~ ./include/*~ 
 	rm -rf ./lib/libadcl.a
