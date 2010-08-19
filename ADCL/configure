@@ -4291,6 +4291,7 @@ _ACEOF
 
 fi
 
+
 { echo "$as_me:$LINENO: checking for number of measurements per method" >&5
 echo $ECHO_N "checking for number of measurements per method... $ECHO_C" >&6; }
 
@@ -4437,7 +4438,7 @@ fi
 #AC_FUNC_MEMCMP
 #AC_CHECK_FUNCS(gethostname strerror strstr setlinebuf strcasecmp snprintf)
 
-ac_config_files="$ac_config_files Makefile Makefile.defs include/ADCL_sysconfig.h src/framework/Makefile src/adcl/C/Makefile src/dummympi/Makefile utils/Makefile"
+ac_config_files="$ac_config_files Makefile Makefile.defs include/ADCL_sysconfig.h src/framework/Makefile src/adcl/C/Makefile src/dummympi/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4998,7 +4999,6 @@ do
     "src/framework/Makefile") CONFIG_FILES="$CONFIG_FILES src/framework/Makefile" ;;
     "src/adcl/C/Makefile") CONFIG_FILES="$CONFIG_FILES src/adcl/C/Makefile" ;;
     "src/dummympi/Makefile") CONFIG_FILES="$CONFIG_FILES src/dummympi/Makefile" ;;
-    "utils/Makefile") CONFIG_FILES="$CONFIG_FILES utils/Makefile" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
