@@ -1,29 +1,60 @@
-#
-# Copyright (c) 2007 Cisco, Inc. All rights reserved.
-#
-
 # -*- shell-script -*- 
 # 
 # $HEADER$
 #  
 
 #
+# Copyright (c) 2007-2010 Cisco Systems, Inc. All rights reserved.
+#
+
+#
 # Init autoconf
 #
 
-AC_INIT(otpo.c)
+AC_INIT([otpo], 
+        [m4_normalize(esyscmd([config/otpo_get_version.sh VERSION --base]))],
+        [http://www.open-mpi.org/community/help/], [otpo])
 AC_PREREQ(2.52)
-AC_CONFIG_AUX_DIR(config)
-AC_CONFIG_MACRO_DIR(config)
+AC_CONFIG_AUX_DIR(./config)
+# Note that this directory must *exactly* match what was specified via
+# -I in ACLOCAL_AMFLAGS in the top-level Makefile.am.
+AC_CONFIG_MACRO_DIR(./config)
 
 echo "Configuring OTPO"
 
-#
-# The third argument to AM_INIT_AUTOMAKE surpresses the PACKAGE and
-# VERSION macors
-#
+AM_INIT_AUTOMAKE([1.10 dist-bzip2 foreign -Wall -Werror])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AM_INIT_AUTOMAKE(otpo, 1.0, 'no')
+# Get the version of otpo that we are installing
+AC_MSG_CHECKING([for otpo version])
+OTPO_VERSION="`$srcdir/config/otpo_get_version.sh $srcdir/VERSION`"
+OTPO_MAJOR_VERSION="`$srcdir/config/otpo_get_version.sh $srcdir/VERSION --major`"
+OTPO_MINOR_VERSION="`$srcdir/config/otpo_get_version.sh $srcdir/VERSION --minor`"
+OTPO_RELEASE_VERSION="`$srcdir/config/otpo_get_version.sh $srcdir/VERSION --release`"
+OTPO_SVN_R="`$srcdir/config/otpo_get_version.sh $srcdir/VERSION --svn`"
+OTPO_RELEASE_DATE="`$srcdir/config/otpo_get_version.sh $srcdir/VERSION --release-date`"
+AC_SUBST(OTPO_VERSION)
+AC_SUBST(OTPO_SVN_R)
+AC_SUBST(OTPO_RELEASE_DATE)
+AC_DEFINE_UNQUOTED([OTPO_MAJOR_VERSION], [$OTPO_MAJOR_VERSION],
+    [Major version of otpo])
+AC_DEFINE_UNQUOTED([OTPO_MINOR_VERSION], [$OTPO_MINOR_VERSION],
+    [Minor version of otpo])
+AC_DEFINE_UNQUOTED([OTPO_RELEASE_VERSION], [$OTPO_RELEASE_VERSION],
+    [Release version of otpo])
+AC_MSG_RESULT([$OTPO_VERSION])
+
+# Override/fixup the version numbers set by AC_INIT, since on
+# developer builds, there's no good way to know what the version is
+# before running configure :(.  We only use the base version number
+# (ie, no svn r numbers) for the version set in AC_INIT.  This will
+# always match reality because we add the VERSION file (the only way
+# to change the major.minor.release{greek}) into the configure
+# dependencies.
+
+PACKAGE_VERSION="$OTPO_VERSION"
+PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
+VERSION="${PACKAGE_VERSION}"
 
 # Setup the reporting/otpo_config.h file
 

@@ -1,0 +1,103 @@
+m4_define([_m4_divert(SCRIPT)], 100)
+m4_divert_push([SCRIPT])dnl
+#!/bin/sh
+#
+# otpo_get_version is created from otpo_get_version.m4 and otpo_get_version.m4sh.
+#
+# Copyright (c) 2004-2006 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# Copyright (c) 2008      Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+m4_include([otpo_get_version.m4])
+
+srcfile="$1"
+option="$2"
+
+case "$option" in
+    # svnversion can take a while to run.  If we don't need it, don't run it.
+    --major|--minor|--release|--greek|--base|--help)
+        otpo_ver_need_svn=0
+        ;;
+    *)
+        otpo_ver_need_svn=1
+esac
+
+
+if test -z "$srcfile"; then
+    option="--help"
+else
+    OTPO_GET_VERSION([$srcfile],[OTPO])
+
+    if test "$option" = ""; then
+	option="--full"
+    fi
+fi
+
+case "$option" in
+    --full|-v|--version)
+	echo $OTPO_VERSION
+	;;
+    --major)
+	echo $OTPO_MAJOR_VERSION
+	;;
+    --minor)
+	echo $OTPO_MINOR_VERSION
+	;;
+    --release)
+	echo $OTPO_RELEASE_VERSION
+	;;
+    --greek)
+	echo $OTPO_GREEK_VERSION
+	;;
+    --svn)
+	echo $OTPO_SVN_R
+	;;
+    --base)
+        echo $OTPO_BASE_VERSION
+        ;;
+    --release-date)
+        echo $OTPO_RELEASE_DATE
+        ;;
+    --all)
+        echo ${OTPO_VERSION} ${OTPO_MAJOR_VERSION} ${OTPO_MINOR_VERSION} ${OTPO_RELEASE_VERSION} ${OTPO_GREEK_VERSION} ${OTPO_SVN_R}
+        ;;
+    -h|--help)
+	cat <<EOF
+$0 <srcfile> [<option>]
+
+<srcfile> - Text version file
+<option>  - One of:
+    --full         - Full version number
+    --major        - Major version number
+    --minor        - Minor version number
+    --release      - Release version number
+    --greek        - Greek (alpha, beta, etc) version number
+    --svn          - Subversion repository number
+    --all          - Show all version numbers, separated by :
+    --base         - Show base version number (no svn number)
+    --release-date - Show the release date
+    --help         - This message
+EOF
+        ;;
+    *)
+        echo "Unrecognized option $option.  Run $0 --help for options"
+        ;;
+esac
+
+# All done
+
+exit 0
