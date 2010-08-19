@@ -768,4 +768,4 @@ dnl Checks for library functions.
 #AC_FUNC_MEMCMP
 #AC_CHECK_FUNCS(gethostname strerror strstr setlinebuf strcasecmp snprintf)
 
-AC_OUTPUT(Makefile Makefile.defs include/ADCL_sysconfig.h src/framework/Makefile src/adcl/C/Makefile src/dummympi/Makefile utils/Makefile)
+AC_OUTPUT(Makefile Makefile.defs include/ADCL_sysconfig.h src/framework/Makefile src/adcl/C/Makefile src/dummympi/Makefile)
