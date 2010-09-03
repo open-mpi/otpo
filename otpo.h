@@ -30,6 +30,7 @@ int op_num;
 char *num_proc;
 char *operation;
 char *tests_names[3];
+char *output_dir;
 
 /* enum to the error codes that can be returned */
 enum otpo_error_codes
@@ -66,7 +67,8 @@ enum otpo_operand
     PARAM = 1,
     INTEGER = 2,
     FLOAT = 3,
-    DOUBLE = 4
+    DOUBLE = 4,
+    STRING = 5
 };
 
 enum otpo_traverse_method 
@@ -95,6 +97,7 @@ struct otpo_rpn_stack_element_t
         int integer_value;
         float float_value;
         double double_value;
+        char string_value[CONDITION_LENGTH];
     } value;
 };
 typedef struct otpo_rpn_stack_element_t otpo_rpn_stack_element;
@@ -134,6 +137,9 @@ struct otpo_param_list_t
 #define OTPO_TEST_NETPIPE      0
 #define OTPO_TEST_SKAMPI       1
 #define OTPO_TEST_NPB          2
+#define OTPO_TEST_LATENCY_IO   3
+#define OTPO_TEST_NONCONTIG    4
+#define OTPO_TEST_MPI_TILE_IO  5
 
 int otpo_initialize_list (char *file_name);
 int otpo_free_list_params_objects ();
@@ -141,12 +147,12 @@ int otpo_get_num_parameters (char *file_name);
 int otpo_populate_attributes (ADCL_Attribute *ADCL_param_attributes);
 int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions, 
                                 ADCL_Fnctset *fnctset);
-int otpo_write_results (ADCL_Request req, char *output_file, int *num_functions);
-int otpo_analyze_results (char *output_file, int num_functions); 
+int otpo_write_results (ADCL_Request req, int *num_functions);
+int otpo_analyze_results (int num_functions); 
 int otpo_write_interrupt_data (int num_tested, double *results, 
                                int current_winner, char *backup_file);
 int otpo_read_interrupt_data (char *backup_file, int *num_tested, double **results);
 int otpo_dump_list (void);
 void otpo_test_func (ADCL_Request req);
-int otpo_generate_input_file (char *);
+int otpo_generate_input_file ();
 #endif /* __OTPO_H__*/

@@ -1,0 +1,11 @@
+fcoll -p static dynamic individual two_phase ylib
+fcoll_dynamic_num_io_procs -i "fcoll dynamic =" -p 1 4
+fcoll_dynamic_cycle_buffer_size -i "fcoll dynamic =" -p 2097152 20971520 104857600 209715200
+fcoll_static_num_io_procs -i "fcoll static =" -p 1 4
+fcoll_static_cycle_buffer_size -i "fcoll static =" -p 2097152 20971520 104857600 209715200
+fcoll_two_phase_num_io_procs -i "fcoll two_phase =" -p 1 4 
+fcoll_two_phase_cycle_buffer_size -i "fcoll two_phase =" -p  2097152 20971520 104857600 209715200
+fcoll_individual_cycle_buffer_size -i "fcoll individual =" -p  2097152 20971520 104857600 209715200
+fcoll_ylib_num_io_procs -i "fcoll ylib =" -p 1 4
+fcoll_ylib_stripe_size -i "fcoll ylib =" -p 65536 1048576
+fcoll_ylib_blocks_per_cycle -i "fcoll ylib =" 10 100

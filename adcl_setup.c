@@ -24,13 +24,13 @@ static int kill_child (pid_t);
 static int get_next_combination (int *);
 static int get_next_val (int, int);
 static int check_rpn (int *);
-static int pop ();
-static int push (int);
+static otpo_rpn_stack_element pop ();
+static int push (otpo_rpn_stack_element);
 static int set_mpi_arguments (char ***);
 static int update_adcl_request (ADCL_Request);
 
 unsigned int  TIMEOUT = 200;
-int rpn_stack [RPN_MAX_ELEMENTS];
+otpo_rpn_stack_element rpn_stack [RPN_MAX_ELEMENTS];
 int rpn_stack_position;
 
 /* Funtion that forks the mpirun */
@@ -69,7 +69,7 @@ void otpo_test_func (ADCL_Request req)
         char ** mpi_args; /* argument list to execvp */
         /* environment variables (parameters set) */
         char env[LINE_SIZE];
-        char env_value[LINE_SIZE]; 
+        char env_value[LINE_SIZE];
 
         pid = setsid();
         if (!debug) 
@@ -80,7 +80,8 @@ void otpo_test_func (ADCL_Request req)
 
         set_mpi_arguments (&mpi_args);
         
-        ADCL_Request_get_curr_function (req, &function_name, &attrs_names, &attrs_num,
+        ADCL_Request_get_curr_function (req, &function_name, 
+                                        &attrs_names, &attrs_num,
                                         &attrs_values_names, &attrs_values_num);
         if (debug) 
         {
@@ -117,8 +118,7 @@ void otpo_test_func (ADCL_Request req)
 
             if (aggregate)
             {
-                char *token;
-                
+                char *token = NULL;
                 token = strtok (attrs_values_names[i],"$");
                 if ('$' != attrs_values_names[i][0])
                 {
@@ -200,23 +200,52 @@ void otpo_test_func (ADCL_Request req)
 
         close (pipefd[0]); /* close reading end of pipe */
         fcntl (pipefd[1], F_SETFD, FD_CLOEXEC);
+
         /* Put here benchmarks with no output file option */
-	if (OTPO_TEST_NPB == test) {
-            if((fd = open("npb.out", O_RDWR | O_CREAT, S_IRWXU ))==-1){ /*open the file */
+        switch (test) {
+        case OTPO_TEST_NPB:
+            if((fd = open("npb.out", O_RDWR | O_CREAT, S_IRWXU ))==-1){
                 perror("open");
                 return ;
             }
+            break;
+        case OTPO_TEST_LATENCY_IO:
+            if((fd = open("latency_io.out", O_RDWR | O_CREAT, S_IRWXU ))==-1){
+                perror("open");
+                return ;
+            }
+            break;
+        case OTPO_TEST_NONCONTIG:
+            if((fd = open("noncontig.out", O_RDWR | O_CREAT, S_IRWXU ))==-1){
+                perror("open");
+                return ;
+            }
+            break;
+        case OTPO_TEST_MPI_TILE_IO:
+            if((fd = open("mpi_tile_io.out", O_RDWR | O_CREAT, S_IRWXU ))==-1){
+                perror("open");
+                return ;
+            }
+            break;
+        default:
+            break;
+        }
+
+        if (OTPO_TEST_NPB == test ||
+            OTPO_TEST_LATENCY_IO == test ||
+            OTPO_TEST_NONCONTIG == test ||
+            OTPO_TEST_MPI_TILE_IO == test) {
+
             dup2(fd,STDOUT_FILENO); /*copy the file descriptor fd into standard output*/
             dup2(fd,STDERR_FILENO); /* same, for the standard error */
             close(fd); /* close the file descriptor as we don't need it more  */
-        }    
+        }
+
         if (-1 == (code = execvp ("mpirun",  mpi_args))) {
             perror ("EXECVP failed");
             write (pipefd[1], &code, sizeof(int));
             exit (1);
         }
-        
-
     }
     else /* Parent Process */
     {    
@@ -375,7 +404,7 @@ int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions,
     {
         attr_vals[i] = list_params[i].possible_values[0];
     }
-    
+
     more = 1;
     count = 0;
     
@@ -408,8 +437,8 @@ int otpo_populate_function_set (ADCL_Attrset attrset, int num_functions,
 /* Check that the combination attr_vals, satisfies all rpns */
 static int check_rpn (int *attr_vals)
 {
-    int i, j, value1, value2, ret;
-        
+    int i, j, ret;
+    otpo_rpn_stack_element e1, e2, e3;
     ret = 1; 
     
     for (i=0 ; i<num_parameters; i++)
@@ -432,68 +461,136 @@ static int check_rpn (int *attr_vals)
             }
             if (list_params[i].rpn_elements[j].is_operator)
             {
-                value1 = pop();
-                value2 = pop();
+                char *temp1=NULL,*temp2=NULL;
+                e1 = pop();
+                if (STRING == e1.type.operand_type) {
+                    temp1 = strdup (e1.value.string_value);
+                }
+                else if (PARAM == e1.type.operand_type) {
+                    int k = 0;
+                    while (1) {
+                        if (attr_vals[e1.value.param_index] == 
+                            list_params[e1.value.param_index].possible_values[k]) {
+                            temp1 = strdup 
+                                (list_params[e1.value.param_index].string_values[k]);
+                            break;
+                        }
+                        k++;
+                    }
+                }
+                e2 = pop();
+                if (STRING == e2.type.operand_type) {
+                    temp2 = strdup (e2.value.string_value);
+                }
+                else if (PARAM == e2.type.operand_type) {
+                    int k = 0;
+                    while (1) {
+                        if (attr_vals[e2.value.param_index] == 
+                            list_params[e2.value.param_index].possible_values[k]) {
+                            temp2 = strdup 
+                                (list_params[e2.value.param_index].string_values[k]);
+                            break;
+                        }
+                        k++;
+                    }
+                }
+                e3.type.operand_type = INTEGER;
+                e3.is_operator = 0;
                 switch (list_params[i].rpn_elements[j].type.operator_type)
                 {
-                case ADD:
-                    push (value2+value1);
-                    break;
-                case SUBTRACT:
-                    push (value2-value1);
-                    break;
-                case MULTIPLY:
-                    push (value2*value1);
-                    break;
-                case DIVIDE:
-                    push (value2/value1);
-                    break;
                 case EQUAL:
-                    push ((value2 == value1) ? 1 : 0); 
+                    if (NULL != temp1 && NULL != temp2)
+                        e3.value.integer_value = 
+                            ((strcmp(temp2,temp1)) ? 0 : 1);
+                    if (INTEGER == e2.type.operand_type && INTEGER == e1.type.operand_type)
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value == e1.value.integer_value) ? 1 : 0);
+                    push (e3);
                     break;
                 case NEQUAL:
-                    push ((value2 != value1) ? 1 : 0);
+                    if (NULL != temp1 && NULL != temp2)
+                        e3.value.integer_value = 
+                            ((strcmp(temp1,temp2)) ? 1 : 0);
+                    if (INTEGER == e2.type.operand_type && INTEGER == e1.type.operand_type)
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value == e1.value.integer_value) ? 0 : 1);
+                    push (e3);
+                    break;
+                case ADD:
+                    e3.value.integer_value = 
+                        e1.value.integer_value + e2.value.integer_value;
+                    push (e3);
+                    break;
+                case SUBTRACT:
+                    e3.value.integer_value = 
+                        e2.value.integer_value - e1.value.integer_value;
+                    push (e3);
+                    break;
+                case MULTIPLY:
+                    e3.value.integer_value = 
+                        e2.value.integer_value * e1.value.integer_value;
+                    push (e3);
+                    break;
+                case DIVIDE:
+                    e3.value.integer_value = 
+                        e2.value.integer_value / e1.value.integer_value;
+                    push (e3);
                     break;
                 case GREATER:
-                    push ((value2 > value1) ? 1 : 0);
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value > e1.value.integer_value) ? 1 : 0);
+                    push (e3);
                     break;
                 case LESS:
-                    push ((value2 < value1) ? 1 : 0);
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value < e1.value.integer_value) ? 1 : 0);
+                    push (e3);
                     break;
                 case GEQUAL:
-                    push ((value2 >= value1) ? 1 : 0);
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value >= e1.value.integer_value) ? 1 : 0);
+                    push (e3);
                     break;
                 case LEQUAL:
-                    push ((value2 <= value1) ? 1 : 0);
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value <= e1.value.integer_value) ? 1 : 0);
+                    push (e3);
                     break;
                 case AND:
-                    push ((value2==1 && value1==1) ? 1 : 0);
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value==1 && e1.value.integer_value==1) ? 1 : 0);
+                    push (e3);
                     break;
                 case OR:
-                    push ((value2==1 || value1==1) ? 1 : 0);
+                        e3.value.integer_value = 
+                            ((e2.value.integer_value==1 || e1.value.integer_value==1) ? 1 : 0);
+                    push (e3);
                     break;
                 default:
                     fprintf (stderr, "Invalid operator\n");
                     exit(1);
                 }
+                if (NULL != temp1) {
+                    free (temp1);
+                    temp1 = NULL;
+                }
+                if (NULL != temp2) {
+                    free (temp2);
+                    temp2 = NULL;
+                }
             }
             else 
             {
-                if (PARAM == list_params[i].rpn_elements[j].type.operand_type)
-                {
-                    push (attr_vals[list_params[i].rpn_elements[j].value.param_index]);
-                }
-                else if (INTEGER == list_params[i].rpn_elements[j].type.operand_type)
-                {
-                    push (list_params[i].rpn_elements[j].value.integer_value);
-                }
+                push (list_params[i].rpn_elements[j]);
             }
             j ++;
         }
         if (1 == rpn_stack_position)
-            /*&& attr_vals[i] != list_params[i].possible_values[0])*/
         {
-            ret = rpn_stack[0];
+            ret = rpn_stack[0].value.integer_value;
+            if (!ret && attr_vals[i] == list_params[i].possible_values[0]) {
+                ret = 1;
+            }
         }
         else if (1 != rpn_stack_position) 
         {
@@ -504,7 +601,7 @@ static int check_rpn (int *attr_vals)
     return ret;
 }
 
-static int pop ()
+static otpo_rpn_stack_element pop ()
 {
     if (0 < rpn_stack_position)
     {
@@ -517,11 +614,22 @@ static int pop ()
     }
 }
 
-static int push (int value)
+static int push (otpo_rpn_stack_element element)
 {
     if (RPN_MAX_ELEMENTS > rpn_stack_position)
     {
-        rpn_stack[rpn_stack_position++] = value;
+        rpn_stack[rpn_stack_position++] = element;
+        /*
+        if (STRING == element.type.operand_type) {
+            printf ("PUSHING %s\n", element.value.string_value);
+        }
+        else if (PARAM == element.type.operand_type) {
+            printf ("PUSHING %s\n", list_params[element.value.param_index].name);
+        }
+        else if (INTEGER == element.type.operand_type) {
+            printf ("PUSHING %d\n", element.value.integer_value);
+        }
+        */
     }
     else 
     {
@@ -627,8 +735,8 @@ static int kill_child (pid_t pid)
 
 static int set_mpi_arguments (char *** mpi_args)
 {
-    int i;
-    i = 0;
+    int i=0,k;
+    char temp[2];
    
     /* JMS: do not use a hard-coded 20 here */
     (*mpi_args) = (char **)malloc(sizeof(char*) * (mca_args_len + 20));
@@ -677,10 +785,51 @@ static int set_mpi_arguments (char *** mpi_args)
          break;
      case OTPO_TEST_NPB: /* No argument so far */
          break;
+     case OTPO_TEST_LATENCY_IO:
+         sprintf (temp,"%d",op_num);
+         (*mpi_args)[i++] = "-m";
+         (*mpi_args)[i++] = "12";
+         (*mpi_args)[i++] = "-s";
+         (*mpi_args)[i++] = msg_size;
+         (*mpi_args)[i++] = "-p";
+         (*mpi_args)[i++] = output_dir;
+         (*mpi_args)[i++] = "-f";
+         (*mpi_args)[i++] = "io_test";
+         break;
+     case OTPO_TEST_NONCONTIG:
+         (*mpi_args)[i++] = "-fname";
+         (*mpi_args)[i++] = "io_test";
+         (*mpi_args)[i++] = "-fsize";
+         (*mpi_args)[i++] = "20";
+         (*mpi_args)[i++] = "-veclen";
+         (*mpi_args)[i++] = num_proc;
+         (*mpi_args)[i++] = "-timing";
+         (*mpi_args)[i++] = "-coll";
+         break;
+     case OTPO_TEST_MPI_TILE_IO:
+         (*mpi_args)[i++] = "--filename";
+         (*mpi_args)[i++] = "io_test";
+         (*mpi_args)[i++] = "--write_file";
+         (*mpi_args)[i++] = "--collective";
+         (*mpi_args)[i++] = "--nr_tiles_x";
+
+         (*mpi_args)[i++] = "--nr_tiles_y";
+         
+         (*mpi_args)[i++] = "--sz_tile_x";
+
+         (*mpi_args)[i++] = "--sz_tile_y";
+         
+         (*mpi_args)[i++] = "--sz_element";
+         (*mpi_args)[i++] = msg_size;
+         break;
     }
 
     (*mpi_args)[i++] = NULL;
-    
+    for (k=0 ; k<i-1 ; k++) {
+        printf ("%s ", (*mpi_args)[k]);
+    }
+    printf ("\n");
+
     return SUCCESS;
 }
 
@@ -688,9 +837,10 @@ static int update_adcl_request (ADCL_Request req)
 {
     char line[LINE_SIZE];
     char *tok;
-    double latency;
+    double latency, bandwidth;
     FILE *fp;
     switch(test) {
+
     case OTPO_TEST_NETPIPE:
     open: 
         fp = fopen ("np.out", "r");
@@ -717,6 +867,7 @@ static int update_adcl_request (ADCL_Request req)
             ADCL_Request_update (req, latency*1000000);
         }
         break;
+
     case OTPO_TEST_SKAMPI:
     open1:
         fp = fopen ("skampi.sko","rwq");
@@ -747,8 +898,9 @@ static int update_adcl_request (ADCL_Request req)
         ADCL_Request_update (req, latency);
         remove("skampi.sko");
         break;
+
     case OTPO_TEST_NPB:
-	open2:
+    open2:
         fp = fopen ("npb.out", "r");
         if (NULL == fp)
         {
@@ -767,7 +919,105 @@ static int update_adcl_request (ADCL_Request req)
         ADCL_Request_update (req, latency);
         remove("npb.out");
         break;
-    }   
+
+    case OTPO_TEST_LATENCY_IO:
+    open3:
+        fp = fopen ("latency_io.out", "r");
+        if (NULL == fp)
+        {
+            if (EINTR == errno)
+            {
+                /* try again */
+		goto open3;
+            }
+            printf ("--> Can't open noncontig.out\n");
+            return FAIL;
+        }
+        while (1) {
+            fgets (line, LINE_SIZE, fp);
+            if (line[0] == 'T') {
+                break;
+            }
+        }
+        tok = strtok (line," \t");
+        while (1) {
+            if (!strcmp ("bandwidth", tok)) {
+                break;
+            }
+            tok = strtok (NULL," \t");
+        }
+        tok = strtok (NULL," \t");
+        bandwidth = strtod (tok, NULL);
+        bandwidth = 1/bandwidth;
+        if (debug || verbose) {
+            printf ("bandwidth: %s\n", tok); 
+        }
+        ADCL_Request_update (req, bandwidth);
+        remove ("latency_io.out");
+        remove ("io_test");
+        break;
+
+    case OTPO_TEST_NONCONTIG:
+    open4:
+        fp = fopen ("noncontig.out", "r");
+        if (NULL == fp)
+        {
+            if (EINTR == errno)
+            {
+                /* try again */
+		goto open4;
+            }
+            printf ("--> Can't open noncontig.out\n");
+            return FAIL;
+        }
+        while (1) {
+            fgets (line, LINE_SIZE, fp);
+            if (line[0] == ' ') {
+                break;
+            }
+        }
+        tok = strtok (line," \t");
+        while (1) {
+            if (tok[0] == ':') {
+                break;
+            }
+            tok = strtok (NULL," \t");
+        }
+        tok = strtok (NULL," \t/"); /*min*/
+        tok = strtok (NULL," \t/"); /*max*/
+        bandwidth = strtod (tok,NULL);
+        ADCL_Request_update (req, (-1 * bandwidth));
+        remove ("noncontig.out");
+        break;
+
+    case OTPO_TEST_MPI_TILE_IO:
+    open5:
+        fp = fopen ("mpi_tile_io.out", "r");
+        if (NULL == fp)
+        {
+            if (EINTR == errno)
+            {
+                /* try again */
+		goto open4;
+            }
+            printf ("--> Can't open mpi_tile_io.out\n");
+            return FAIL;
+        }
+        while (1) {
+            fgets (line, LINE_SIZE, fp);
+            if (line[0] != '#') {
+                break;
+            }
+        }
+        tok = strtok (line," \t");
+        tok = strtok (NULL," \t");
+        tok = strtok (NULL," \t");
+        tok = strtok (NULL," \t");
+        bandwidth = strtod (tok,NULL);
+        ADCL_Request_update (req, (-1 * bandwidth));
+        remove ("mpi_tile_io.out");
+        break;
+    }
     
     fclose(fp);
     return SUCCESS;

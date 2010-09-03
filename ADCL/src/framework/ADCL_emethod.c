@@ -20,7 +20,7 @@ int ADCL_emethod_alltoall_selection = -1;
 int ADCL_emethod_alltoallv_selection = -1;
 int ADCL_merge_requests = 1;
 int ADCL_emethod_numtests = ADCL_EMETHOD_NUMTESTS;
-int ADCL_emethod_search_algo = ADCL_TWOK_FACTORIAL;
+int ADCL_emethod_search_algo = ADCL_TWOK_FACTORIAL; /*ADCL_BRUTE_FORCE*/
 int ADCL_emethod_learn_from_hist = 0;
 
 #define ADCL_ATTR_TOTAL_NUM 3

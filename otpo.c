@@ -26,7 +26,7 @@ int main(int argc , char *argv[])
 {
     int i, k, num_comb, hr, min, sec, generate_input_file;
     int num_tested, current_winner, resume, num_functions, testing;
-    char *input_file = NULL, *output_dir = NULL;
+    char *input_file = NULL;
     char *interrupt_file = NULL;
     float current;
     double *results = NULL, *unfiltered = NULL, *outliers = NULL;
@@ -72,9 +72,10 @@ int main(int argc , char *argv[])
     test = 0;
     test_path = NULL;
     msg_size = NULL;
+    output_dir = NULL;
     resume = 0;
     time(&stamp);
-    op_num = 0;
+    op_num = -1;
     num_proc = NULL;
     operation = NULL;
     testing = 1;
@@ -83,6 +84,9 @@ int main(int argc , char *argv[])
     tests_names[0] = strdup("Netpipe");
     tests_names[1] = strdup("SKaMPI");
     tests_names[2] = strdup("NPB");
+    tests_names[3] = strdup("latency_io");
+    tests_names[4] = strdup("noncontig");
+    tests_names[5] = strdup("mpi_tile_io");
 
     if (SUCCESS != set_mca_options (argc, argv)) 
     {
@@ -145,6 +149,15 @@ int main(int argc , char *argv[])
             else if ( !strcasecmp (optarg,"NPB")) {
                 test = OTPO_TEST_NPB;
             }
+            else if ( !strcasecmp (optarg,"latency_io")) {
+                test = OTPO_TEST_LATENCY_IO;
+            }
+            else if ( !strcasecmp (optarg,"noncontig")) {
+                test = OTPO_TEST_NONCONTIG;
+            }
+            else if ( !strcasecmp (optarg,"mpi_tile_io")) {
+                test = OTPO_TEST_MPI_TILE_IO;
+            }
             else {
                 printf ("Invalid Test Name\n");
                 exit (1);
@@ -171,11 +184,6 @@ int main(int argc , char *argv[])
             break;
         case 'c':
             op_num =  atoi(optarg);
-            if (op_num < 0 || op_num > 11)
-            {
-                printf("Invalid Collective Operation number!");
-                exit(1);
-            }
             break;
         case 'a':
             num_proc = strdup(optarg);
@@ -193,7 +201,7 @@ int main(int argc , char *argv[])
     }
 
     if (generate_input_file) {
-        otpo_generate_input_file (output_dir);
+        otpo_generate_input_file ();
         return 0;
     }
 
@@ -236,9 +244,21 @@ int main(int argc , char *argv[])
         num_proc = strdup ("2");
     }
 
-    if ((NULL == operation)&& (OTPO_TEST_SKAMPI == test)) 
+    if (OTPO_TEST_SKAMPI == test) 
     {
-        operation = strdup ("MPI_MAX");
+        if (op_num < 0 || op_num > 11) {
+            printf("Invalid Collective Operation number!");
+            exit(1);
+        }
+        if (NULL == operation) {
+            operation = strdup ("MPI_MAX");
+        }
+    }
+    else if (OTPO_TEST_LATENCY_IO == test) {
+        if (op_num < 1 || op_num > 17) {
+            printf("Invalid IO MODE");
+            exit(1);
+        }
     }
 
     if (verbose || debug)
@@ -437,14 +457,14 @@ int main(int argc , char *argv[])
     }
     
     /* Output the results */
-    if (SUCCESS != otpo_write_results (ADCL_param_request, output_dir, 
+    if (SUCCESS != otpo_write_results (ADCL_param_request,
                                        &num_functions))
     {
         exit(1);
     }
     
     /* Output the results- seperate*/ 
-    if (SUCCESS != otpo_analyze_results (output_dir, num_functions))
+    if (SUCCESS != otpo_analyze_results (num_functions))
     {
         exit(1);
     }
@@ -701,11 +721,16 @@ int otpo_dump_list ()
                     switch (list_params[i].rpn_elements[k].type.operand_type)
                     {
                     case INTEGER:
-                        printf("%d\t", list_params[i].rpn_elements[k].value.integer_value);
+                        printf("%d\t", list_params[i].rpn_elements[k].
+                               value.integer_value);
                         break;
                     case PARAM:
                         printf("%s\t", list_params[list_params[i].rpn_elements[k].
                                                    value.param_index].name);
+                        break;
+                    case STRING:
+                        printf("%s\t", list_params[i].rpn_elements[k].
+                               value.string_value);
                         break;
                     }
                 }
@@ -789,7 +814,7 @@ static void print_usage ()
     printf ("-v (verbose output)\n");
     printf ("-s (status output)\n");
     printf ("-n (silent/no output)\n");
-    printf ("-t test (name of test, Current supported: Netpipe, Skampi and NPB)\n");
+    printf ("-t test (name of test, Current supported: Netpipe, Skampi, NPB, latency_io, noncontig, mpi_tile_io)\n");
     printf ("-w test_path (path to the test on your system)\n");
     printf ("-l message_length\n");
     printf ("-h hostfile\n");

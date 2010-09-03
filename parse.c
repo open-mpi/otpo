@@ -150,7 +150,8 @@ static int parse (char *file_name)
             /* Possible Values */
 	    else if (0 == strcmp ("-p",token)) 
             {
-                /* allocate all possible values as strings if they are specified by the user */
+                /* allocate all possible values as strings 
+                   if they are specified by the user */
                 token = strtok (NULL, "{}");
                 values_string = strdup (token); 
                 token = strtok (NULL, " \t\n");
@@ -410,6 +411,7 @@ static int set_rpn_stack_elements ()
         }
         count = 0;
         condition_string = strdup (list_params[i].condition);
+
         token = strtok (condition_string," \t\n");
         
         while (NULL != token)
@@ -477,17 +479,10 @@ static int set_rpn_stack_elements ()
             }
 
             list_params[i].rpn_elements[count].is_operator = 0;
-            
-            for (j=0 ; j<strlen(token) ; j++)
+
+
+            if ((atoi(token)) || (strcmp (token, "0") == 0))
             {
-                if (!isdigit(token[j]))
-                {
-                    break;
-                }
-            }
-            if (strlen(token) == j)
-            {
-                list_params[i].rpn_elements[count].is_operator = 0;
                 list_params[i].rpn_elements[count].type.operand_type = INTEGER; 
                 list_params[i].rpn_elements[count].value.integer_value = atoi (token);
                 if (token[0] != '0' && list_params[i].rpn_elements[count].value.integer_value == 0) 
@@ -501,14 +496,14 @@ static int set_rpn_stack_elements ()
             {
                 if (strcmp(token,list_params[j].name) == 0) 
                 {
-                    list_params[i].rpn_elements[count].is_operator = 0;
                     list_params[i].rpn_elements[count].type.operand_type = PARAM; 
                     list_params[i].rpn_elements[count].value.param_index = j;
                     goto set;
                 }
             }
-            fprintf (stderr, "I can't evaluate the rpn of %s\n", list_params[i].name);
-            return FAIL;
+            list_params[i].rpn_elements[count].type.operand_type = STRING; 
+            strcpy (list_params[i].rpn_elements[count].value.string_value, token);
+
         set:
             if (RPN_MAX_ELEMENTS == count)
             {

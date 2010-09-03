@@ -12,19 +12,19 @@
 
 #include "otpo.h"
 
-static int read_intermediate_results (char *, int, char ***, char ****);
-static int write_intermediate_results (ADCL_Request, double, char *); 
+static int read_intermediate_results (int, char ***, char ****);
+static int write_intermediate_results (ADCL_Request, double); 
 static int print_output (ADCL_Request, double, FILE*);
 char output_file[50];
 
-int otpo_write_results (ADCL_Request req, char *output_dir, int *num_functions) 
+int otpo_write_results (ADCL_Request req, int *num_functions) 
 {
     double f_avg=0.0, unf_avg=0.0, out_num=0.0, n=0.0;
     
     ADCL_Request_get_winner_stat (req, &f_avg, &unf_avg, &out_num);
 
     if (FAIL == (*num_functions = 
-                    write_intermediate_results (req, f_avg, output_dir)))
+                    write_intermediate_results (req, f_avg)))
     {
         fprintf(stderr,"Unable to write output\n");
         return FAIL;
@@ -32,134 +32,7 @@ int otpo_write_results (ADCL_Request req, char *output_dir, int *num_functions)
     return SUCCESS;
 }
 
-int otpo_analyze_results (char *output_dir, int num_functions)
-{
-    char **names,***values;
-    int i,j;
-    
-    if (SUCCESS != read_intermediate_results (output_dir, num_functions, 
-                                              &names, &values))
-    {
-        return FAIL;
-    }
-    
-    /* Free Stuff */
-    for (j=0 ; j<num_parameters ; j++) 
-    {
-        if (NULL != names[j])
-        {
-            free (names[j]);
-        }
-    }
-    if (NULL != names)
-    {
-        free (names);
-    }
-    for (i=0 ; i<num_functions ; i++) 
-    {
-        for (j=0 ; j<num_parameters ; j++) 
-        {
-            if (NULL != values[i][j])
-            {
-                free (values[i][j]);
-            }
-        }
-        if (NULL != values[i]) 
-        {
-            free (values[i]);
-        }
-    }
-    if (NULL != values)
-    {
-        free (values);
-    }
-
-    return SUCCESS;
-}
-static int read_intermediate_results (char *output_dir, int num_functions, 
-                                      char ***names, char ****values)
-{
-    FILE *fp;
-    char line[LINE_SIZE], *token;
-    int i,j,tmp,current,set;
-
-    (*names) = (char **)malloc(sizeof(char *) * num_parameters);
-    if (NULL == (*names)) 
-    {
-        printf("Malloc_Failed...\n");
-        return NO_MEMORY;
-    }
-    (*values) = (char ***)malloc(sizeof(char **) * num_functions);
-    if (NULL == (*values)) 
-    {
-        printf("Malloc_Failed...\n");
-        return NO_MEMORY;
-    }
-    for (j=0 ; j<num_functions ; j++) 
-    {
-        (*values)[j] = (char **)malloc(sizeof(char *) * num_parameters);
-        if (NULL == (*values)[j]) 
-        {
-            printf("Malloc_Failed...\n");
-            return NO_MEMORY;
-        }
-    }
-    
-    set = 0;
-    current = 0;
- open1:
-    fp = fopen (output_file, "r");
-    if (NULL == fp) 
-    { 
-        if (EINTR == errno)
-        {
-            /* try again */
-            goto open1;
-        }
-        fprintf (stderr,"Unable to open file: %s\n",output_file);
-        return FAIL;
-    }
-
-    while (NULL != fgets (line, LINE_SIZE, fp)) 
-    {
-        if (NULL == line || '\n' == line[0] || 
-            '=' == line[0] || '*' == line[0]) 
-        {
-            continue;
-        }
-        token = strtok (line," \t\n");
-        if (NULL != token)
-        {
-            token = strtok (NULL," \t\n");
-            /* get the number of functions for a specific value */
-            tmp = atoi (token);
-            for (i=current ; i<current+tmp ; i++) 
-            {
-                for (j=0 ; j<num_parameters ; j++) 
-                {
-                    do
-                    {
-                        fgets (line, LINE_SIZE, fp);
-                    }
-                    while ('*' == line[0]);
-                    token = strtok (line," \t\n");
-                    if (0 == set)
-                    {
-                        (*names)[j] = strdup (token);
-                    }
-                    token = strtok (NULL," \t\n");
-                    (*values)[i][j] = strdup (token);
-                }
-                set = 1;
-            }
-            current += tmp;
-        }
-    }
-    fclose(fp);
-
-    return SUCCESS;
-}
-static int write_intermediate_results (ADCL_Request req, double f_avg, char *output_dir) 
+static int write_intermediate_results (ADCL_Request req, double f_avg) 
 {
     double n=0.0;
     FILE *fp;
@@ -194,7 +67,7 @@ static int write_intermediate_results (ADCL_Request req, double f_avg, char *out
         return FAIL;
     }
     num_functions = 0;
-    for (n=f_avg ; n<(f_avg+0.05) ; n=n+0.01) 
+    for (n=f_avg ; n<(f_avg+0.1) ; n=n+0.01) 
     {
         fprintf (fp,"\n============================================================\n");
         tmp = print_output (req, n, fp);
@@ -224,11 +97,16 @@ static int print_output (ADCL_Request req, double n, FILE *fp)
                                              &a_nums, 
                                              &a_values_names, 
                                              NULL);
-    
+    if (OTPO_TEST_LATENCY_IO == test ||
+        OTPO_TEST_NONCONTIG == test ||
+        OTPO_TEST_MPI_TILE_IO == test) {
+        n = 1/n;
+    }
     fprintf(fp,"%f %d\n", n, num_functions);
     if (debug || verbose) 
     {
-        printf ("Found %d Attribute Combinations with result = %f:\n", num_functions, n);
+        printf ("Found %d Attribute Combinations with result = %f:\n", 
+                num_functions, n);
     }
     for (i=0 ; i<num_functions ; i++) 
     {
@@ -238,7 +116,7 @@ static int print_output (ADCL_Request req, double n, FILE *fp)
             if (debug || verbose)
             {
                 printf ("%s = %s\n", a_names[j], a_values_names[i][j]);
-            }        
+            }
         }
 
         fprintf (fp, "******************************************************\n");
@@ -260,7 +138,7 @@ static int print_output (ADCL_Request req, double n, FILE *fp)
         for (j=0 ; j<a_nums ; j++) 
         {
             if (NULL != a_values_names[i][j]) 
-            {                    
+            {
                 free (a_values_names[i][j]);
             }
         }
@@ -355,5 +233,133 @@ int otpo_read_interrupt_data (char *interrupt_file, int *num_tested, double **re
     }
     
     fclose (fp);
+    return SUCCESS;
+}
+
+int otpo_analyze_results (int num_functions)
+{
+    char **names,***values;
+    int i,j;
+    
+    if (SUCCESS != read_intermediate_results (num_functions, 
+                                              &names, &values))
+    {
+        return FAIL;
+    }
+    
+    /* Free Stuff */
+    for (j=0 ; j<num_parameters ; j++) 
+    {
+        if (NULL != names[j])
+        {
+            free (names[j]);
+        }
+    }
+    if (NULL != names)
+    {
+        free (names);
+    }
+    for (i=0 ; i<num_functions ; i++) 
+    {
+        for (j=0 ; j<num_parameters ; j++) 
+        {
+            if (NULL != values[i][j])
+            {
+                free (values[i][j]);
+            }
+        }
+        if (NULL != values[i]) 
+        {
+            free (values[i]);
+        }
+    }
+    if (NULL != values)
+    {
+        free (values);
+    }
+
+    return SUCCESS;
+}
+static int read_intermediate_results (int num_functions, 
+                                      char ***names, char ****values)
+{
+    FILE *fp;
+    char line[LINE_SIZE], *token;
+    int i,j,tmp,current,set;
+
+    (*names) = (char **)malloc(sizeof(char *) * num_parameters);
+    if (NULL == (*names)) 
+    {
+        printf("Malloc_Failed...\n");
+        return NO_MEMORY;
+    }
+    (*values) = (char ***)malloc(sizeof(char **) * num_functions);
+    if (NULL == (*values)) 
+    {
+        printf("Malloc_Failed...\n");
+        return NO_MEMORY;
+    }
+    for (j=0 ; j<num_functions ; j++) 
+    {
+        (*values)[j] = (char **)malloc(sizeof(char *) * num_parameters);
+        if (NULL == (*values)[j]) 
+        {
+            printf("Malloc_Failed...\n");
+            return NO_MEMORY;
+        }
+    }
+    
+    set = 0;
+    current = 0;
+ open1:
+    fp = fopen (output_file, "r");
+    if (NULL == fp) 
+    { 
+        if (EINTR == errno)
+        {
+            /* try again */
+            goto open1;
+        }
+        fprintf (stderr,"Unable to open file: %s\n",output_file);
+        return FAIL;
+    }
+
+    while (NULL != fgets (line, LINE_SIZE, fp)) 
+    {
+        if (NULL == line || '\n' == line[0] || 
+            '=' == line[0] || '*' == line[0]) 
+        {
+            continue;
+        }
+        token = strtok (line," \t\n");
+        if (NULL != token)
+        {
+            token = strtok (NULL," \t\n");
+            /* get the number of functions for a specific value */
+            tmp = atoi (token);
+            for (i=current ; i<current+tmp ; i++) 
+            {
+                for (j=0 ; j<num_parameters ; j++) 
+                {
+                    do
+                    {
+                        fgets (line, LINE_SIZE, fp);
+                    }
+                    while ('*' == line[0]);
+                    token = strtok (line," \t\n");
+                    if (0 == set)
+                    {
+                        (*names)[j] = strdup (token);
+                    }
+                    token = strtok (NULL," \t\n");
+                    (*values)[i][j] = strdup (token);
+                }
+                set = 1;
+            }
+            current += tmp;
+        }
+    }
+    fclose(fp);
+
     return SUCCESS;
 }
