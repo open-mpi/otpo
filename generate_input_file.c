@@ -35,7 +35,7 @@ static int write_input_file (char *ouput_dir,
                              int num_combined_params,
                              int *num_combined_values,
                              otpo_param_t * combined_params);
-int otpo_generate_input_file (char *output_file) {
+int otpo_generate_input_file () {//char *output_file
     int *num_params = NULL;
     int **num_values = NULL;
     otpo_param_t **params = NULL;
@@ -239,7 +239,7 @@ int otpo_generate_input_file (char *output_file) {
         }
     }
 
-    if (SUCCESS != write_input_file (output_file,
+    if (SUCCESS != write_input_file (output_dir,
                                      num_combined_params,
                                      num_combined_values,
                                      combined_params)) {
