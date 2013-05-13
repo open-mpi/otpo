@@ -758,20 +758,20 @@ void create_skampi_ipfile()
     if(op_num == 0)
     {
         fprintf(fp, 
-                "\n    measure comm %s(%s, MPI_BYTE, 0)", 
+                "\n    measure comm : %s(%s, MPI_BYTE, 0)", 
                 coll_ops[op_num], 
                 msg_size);
     }
     else if(op_num == 1)
     {
         fprintf(fp, 
-                "\n    measure comm %s()", 
+                "\n    measure comm : %s()", 
                 coll_ops[op_num]);
     }
     else if(op_num == 2)
     {
         fprintf(fp, 
-                "\n    measure comm %s(%d, MPI_INT, %s, 0)", 
+                "\n    measure comm : %s(%d, MPI_INT, %s, 0)", 
                 coll_ops[op_num], 
                 atoi(msg_size)/4, 
                 operation);
@@ -779,7 +779,7 @@ void create_skampi_ipfile()
     else if(op_num == 3)
     {
         fprintf(fp, 
-                "\n    measure comm %s(%s/4, MPI_INT, %s)", 
+                "\n    measure comm : %s(%s/4, MPI_INT, %s)", 
                 coll_ops[op_num], 
                 msg_size, 
                 operation);
@@ -787,7 +787,7 @@ void create_skampi_ipfile()
     else if(op_num == 4 || op_num == 6 || op_num == 10 || op_num ==11)
     {
         fprintf(fp, 
-                "\n    measure comm %s(%s, MPI_BYTE, %s , MPI_BYTE,  0)", 
+                "\n    measure comm : %s(%s, MPI_BYTE, %s , MPI_BYTE,  0)", 
                 coll_ops[op_num], 
                 msg_size, 
                 msg_size);
@@ -795,7 +795,7 @@ void create_skampi_ipfile()
     else 
     {
         fprintf(fp, 
-                "\n    measure comm %s(%s, MPI_BYTE, %s , MPI_BYTE)", 
+                "\n    measure comm : %s(%s, MPI_BYTE, %s , MPI_BYTE)", 
                 coll_ops[op_num], 
                 msg_size, 
                 msg_size);

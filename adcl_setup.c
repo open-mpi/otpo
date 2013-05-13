@@ -882,12 +882,21 @@ static int update_adcl_request (ADCL_Request req)
             return FAIL;
         }
 
+	/* in skampi-5.0.1 the relevant information  was line 4 
+	   in skampi-5.0.4 it is line 7
+	*/
+        fgets (line, LINE_SIZE, fp);
+        fgets (line, LINE_SIZE, fp);
+        fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
 	     
         fgets (line, LINE_SIZE, fp);
+
         tok = strtok (line," \t");
+        tok = strtok (NULL," \t");
+        tok = strtok (NULL," \t");
         tok = strtok (NULL," \t");
         latency = strtod (tok,NULL);
         if (debug)
