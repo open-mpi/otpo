@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#include "exeTime.h"
 
 #include "otpo.h"
 
@@ -61,7 +62,7 @@ int main(int argc , char *argv[])
         { NULL, 0, NULL, 0 }
     };
 
-    et1 = time (NULL);
+    startt();
     stop_signal = 0;
 
     verbose = 1;
@@ -526,13 +527,13 @@ int main(int argc , char *argv[])
     {
         free (num_proc);
     }
-
-    et2 = time (NULL);
+    stopt();
+    
     sec = 0;
     hr = 0;
     min = 0;
-    sec = (int)difftime (et2, et1);
-    if (3600 <= sec)
+    sec = gettime();    
+if (3600 <= sec)
     {
         hr = sec/3600;
         sec = sec%3600;
@@ -545,6 +546,31 @@ int main(int argc , char *argv[])
     printf ("Time Elapsed: %d hrs %d min %d sec\n", hr, min, (int)sec);
     return 0;
 }
+
+int clockgettime(struct timespec* t) {
+  struct timeval now;
+  int rv = gettimeofday(&now, NULL);
+  if (rv) return rv;
+  t->tv_sec  = now.tv_sec;
+  t->tv_nsec = now.tv_usec * 1000;
+  return 0;
+}
+double gettime (){
+  double accum;
+  accum = ( stop.tv_sec - start.tv_sec )
+    + (double)( stop.tv_nsec - start.tv_nsec )
+    / (double)BILLION;
+  return accum;
+}
+
+void startt(){
+  clockgettime(&start);
+} 
+
+void stopt(){
+  clockgettime(&stop);
+} 
+
 
 /* 
  * Handler function to detect signals 
