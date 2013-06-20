@@ -177,6 +177,7 @@ int ADCL_hypothesis_shrinklist_byattr ( ADCL_emethod_t *e,
     ADCL_printf("#Fnctset has been shrinked from %d to %d entries\n",
         org_count, count );
 
+    ADCL_hypothesis_sync_statobjects ( e );
 
     /* Finally, adjust the attribute list and the attrset to the new values */
     attrset->as_attrs[attr_pos]->a_maxnvalues =  1;
@@ -188,7 +189,26 @@ int ADCL_hypothesis_shrinklist_byattr ( ADCL_emethod_t *e,
 
     return ADCL_SUCCESS;
 }
+/**********************************************************************/
+/**********************************************************************/
+/**********************************************************************/
+int ADCL_hypothesis_sync_statobjects ( ADCL_emethod_t *e )
+{
+  int i, pos;
+  int count = e->em_fnctset.fs_maxnum;
 
+  for ( i=0; i<count; i++ ) {
+    pos = e->em_stats[i]->s_pos;
+    e->em_orgstats[pos]->s_gpts[0] = e->em_stats[i]->s_gpts[0];
+    e->em_orgstats[pos]->s_gpts[1] = e->em_stats[i]->s_gpts[1];
+    e->em_orgstats[pos]->s_gpts[2] = e->em_stats[i]->s_gpts[2];
+
+    /* printf("Synced the stat object at pos%d in shrinked fnctset to pos%d in original array\n", i, pos);*/
+  }
+
+
+  return ADCL_SUCCESS;
+}
 /**********************************************************************/
 /**********************************************************************/
 /**********************************************************************/

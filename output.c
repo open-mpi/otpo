@@ -15,13 +15,19 @@
 static int read_intermediate_results (int, char ***, char ****);
 static int write_intermediate_results (ADCL_Request, double); 
 static int print_output (ADCL_Request, double, FILE*);
-char output_file[50];
+char output_file[100];
 
 int otpo_write_results (ADCL_Request req, int *num_functions) 
 {
     double f_avg=0.0, unf_avg=0.0, out_num=0.0, n=0.0;
+    int ret;
     
-    ADCL_Request_get_winner_stat (req, &f_avg, &unf_avg, &out_num);
+    ret = ADCL_Request_get_winner_stat (req, &f_avg, &unf_avg, &out_num);
+    /* printf("f_avg=%lf unf_avg=%lf out_num=%lf\n", f_avg, unf_avg, out_num);*/
+    if ( ret != ADCL_SUCCESS ) {
+      printf(" Could not retrieve data for winner function\n");
+    }
+    
 
     if (FAIL == (*num_functions = 
                     write_intermediate_results (req, f_avg)))
@@ -67,7 +73,7 @@ static int write_intermediate_results (ADCL_Request req, double f_avg)
         return FAIL;
     }
     num_functions = 0;
-    for (n=f_avg ; n<(f_avg+0.1) ; n=n+0.01) 
+    for (n=f_avg ; n<(f_avg * RANGE) ; n=n+0.01) 
     {
         fprintf (fp,"\n============================================================\n");
         tmp = print_output (req, n, fp);

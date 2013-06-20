@@ -160,7 +160,9 @@ nextemethod:
     ** initiated.
     */
     ADCL_fnctset_dup ( f, &(e->em_fnctset));
-    ADCL_statistics_create ( &(e->em_stats), f->fs_maxnum ); 
+    ADCL_statistics_create ( &(e->em_stats), f->fs_maxnum, 1  ); 
+    ADCL_statistics_create ( &(e->em_orgstats), f->fs_maxnum, 0  ); 
+
 
     DISPLAY((ADCL_DISPLAY_CHANGE_FUNCTION,e->em_id,e->em_fnctset.fs_fptrs[0]->f_id,e->em_fnctset.fs_fptrs[0]->f_name));
     /* initiate the performance hypothesis structure */
@@ -259,6 +261,19 @@ void ADCL_emethod_free ( ADCL_emethod_t * e )
 	    }
 	    free ( e->em_stats );
 	}
+	if ( NULL != e->em_orgstats  ) {
+	    for ( i=0; i< e->em_orgfnctset->fs_maxnum; i++ ) {
+		if ( NULL != e->em_orgstats[i] ) {
+		    if ( NULL != e->em_orgstats[i]->s_time ) {
+			free ( e->em_orgstats[i]->s_time );
+		    }
+		    free ( e->em_orgstats[i] );
+		}
+	    }
+	      free ( e->em_orgstats );
+	}
+	
+
         ADCL_vector_free(&(e->em_vec));
 	if ( NULL != hypo ) {
 	    if ( NULL != hypo->h_attr_hypothesis ) {
@@ -513,6 +528,9 @@ int ADCL_emethods_get_winner (ADCL_emethod_t *emethod, MPI_Comm comm, int count)
 
     emethod->em_filtering = ADCL_statistics_get_winner_v3 ( emethod->em_stats,
 							    count, &winner );
+
+
+    ADCL_hypothesis_sync_statobjects ( emethod );
 
     return winner;
 }

@@ -47,10 +47,12 @@ struct ADCL_statistics_s{
     int          s_flags;  /* Has this data set already been filtered? */
     double      s_lpts[3]; /* local no. of pts by this function */
     double      s_gpts[3]; /* global no. of pts for this function */
+  int         s_pos;/* Position*/    
+
 };
 typedef struct ADCL_statistics_s ADCL_statistics_t;
 
-int ADCL_statistics_create ( ADCL_statistics_t*** stats, int fs_maxnum );
+int ADCL_statistics_create ( ADCL_statistics_t*** stats, int fs_maxnum, int flag );
 int ADCL_statistics_free   ( ADCL_statistics_t*** stats, int fs_maxnum );
 
 int ADCL_statistics_filter_timings  ( ADCL_statistics_t **stats, int count,

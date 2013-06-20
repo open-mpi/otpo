@@ -45,7 +45,7 @@ struct lininf {
                 _t.maxloc =_i;}}
 
 /**********************************************************************/
- int ADCL_statistics_create ( ADCL_statistics_t*** stats, int fs_maxnum ) {
+int ADCL_statistics_create ( ADCL_statistics_t*** stats, int fs_maxnum, int flag ) {
 /**********************************************************************/
     ADCL_statistics_t** tstats;
     int ret = ADCL_SUCCESS;
@@ -63,12 +63,18 @@ struct lininf {
             goto exit;
         }
 
-        /* Allocate the measurements arrays */
-	tstats[i]->s_time = (TIME_TYPE *)calloc(ADCL_emethod_numtests, sizeof(TIME_TYPE));
-        if ( NULL == tstats[i]->s_time ) {
-            ret = ADCL_NO_MEMORY;
-            goto exit;
-        }
+	if ( flag ) {
+	  /* Allocate the measurements arrays */
+	  tstats[i]->s_time = (TIME_TYPE *)calloc(ADCL_emethod_numtests, sizeof(TIME_TYPE));
+	  if ( NULL == tstats[i]->s_time ) {
+	    ret = ADCL_NO_MEMORY;
+	    goto exit;	    
+	  }
+	}
+
+	/*ADDED BY SHWETA JHA*/
+	tstats[i]->s_pos = i;
+
     }
 
  exit:
@@ -256,3 +262,4 @@ int ADCL_statistics_get_winner_v3 ( ADCL_statistics_t **statistics, int count,
     }
     return retval;
 }
+

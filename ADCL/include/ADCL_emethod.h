@@ -53,7 +53,7 @@ struct ADCL_emethod_s {
     double                  **em_distances; /* Matrix cntXcnt of distances between history entries */
     ADCL_hist_t                   *em_hist; /* History entry of the current pb without solution */
     int				   em_root; /* root of the tree in case of reduce function set */
-
+  ADCL_statistics_t           **em_orgstats;
 };
 typedef struct ADCL_emethod_s ADCL_emethod_t;
 

@@ -839,6 +839,8 @@ static int update_adcl_request (ADCL_Request req)
     char *tok;
     double latency, bandwidth;
     FILE *fp;
+    int counter=0;
+
     switch(test) {
 
     case OTPO_TEST_NETPIPE:
@@ -859,29 +861,33 @@ static int update_adcl_request (ADCL_Request req)
             tok = strtok (line," \t");
             tok = strtok (NULL," \t");
             tok = strtok (NULL," \t");
-            latency = strtod (tok,NULL);
-            if (debug) 
-            {
-                printf ("latency = %f usec\n",latency*1000000);
-            }
-            ADCL_Request_update (req, latency*1000000);
-        }
+	    if  ( tok != NULL ) {
+	      latency = strtod (tok,NULL);
+	      if (debug) 
+		{
+		  printf ("latency = %f usec\n",latency*1000000);
+		}
+	      ADCL_Request_update (req, latency*1000000);
+	    }
+	    else {
+	      printf("Could not read value from np.out. Adding 10000000 instead.\n");
+	      ADCL_Request_update (req, 10000000 );
+	    }
+	}
         break;
 
     case OTPO_TEST_SKAMPI:
-    open1:
-        fp = fopen ("skampi.sko","rwq");
+      do {
+        fp = fopen ("skampi.sko","r");
         if (NULL == fp)
-        {
-            if (EINTR == errno)
-            {
-                /* try again */
-                goto open1;
-            }
+	  {
             printf ("--> Can't open skampi.sko\n");
-            return FAIL;
-        }
-
+	    sleep ( 1 );
+	    counter++;
+	  }
+      } while ( fp == NULL && counter < 20 );
+      
+      if ( NULL != fp ) {
 	/* in skampi-5.0.1 the relevant information  was line 4 
 	   in skampi-5.0.4 it is line 7
 	*/
@@ -891,22 +897,30 @@ static int update_adcl_request (ADCL_Request req)
         fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
-	     
+	
         fgets (line, LINE_SIZE, fp);
-
+	//	printf("Line parsed: %s\n", line );
+	
         tok = strtok (line," \t");
         tok = strtok (NULL," \t");
-        tok = strtok (NULL," \t");
-        tok = strtok (NULL," \t");
-        latency = strtod (tok,NULL);
-        if (debug)
-        {
-	    printf ("Time taken = %f usec\n",latency);
-        }
-        
-        ADCL_Request_update (req, latency);
-        remove("skampi.sko");
-        break;
+	//        tok = strtok (NULL," \t");
+	//        tok = strtok (NULL," \t");
+	 latency = strtod (tok,NULL);
+//        if (debug)
+//        {
+	 //  printf ("Time taken = %f usec\n",latency);
+//        }
+
+      }
+      else {
+	printf("Could not read value from skampi.sko. Adding 10000000 instead.\n");
+	latency = 100000.0;
+      }
+
+      ADCL_Request_update (req, latency);
+      remove("skampi.sko");
+      
+      break;
 
     case OTPO_TEST_NPB:
     open2:

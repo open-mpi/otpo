@@ -13,6 +13,7 @@
 #define CONDITION_LENGTH 500
 #define RPN_MAX_ELEMENTS 100
 #define MAX_VALUES 100
+#define RANGE 1.05
 int num_parameters;
 int debug;
 int verbose;
