@@ -42,7 +42,8 @@ HEADER = $(ADCL_INC_DIR)/ADCL_allgatherv.h  \
 
 
 all:
-	cd src/framework ; make 
+	test -z "@adcl_lib_dir@/lib" || mkdir -p "@adcl_lib_dir@/lib"
+	cd src/framework ; make
 	cd src/memory ; make
 	cd src/communication ; make 
 	cd src/adcl/C ; make all 
