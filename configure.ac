@@ -183,8 +183,8 @@ AM_CONDITIONAL([WANT_INTERNAL_ADCL], [test "${adcl_dir}" = "${PWD}/ADCL"])
 AC_MSG_CHECKING([if we want MPI_LEAVE_PINNED])
 AC_ARG_ENABLE(leave-pinned,
 AC_HELP_STRING ([--enable-leave-pinned],
-	       [enable the usage of mpi_leave_pinned (default:enabled)]))
-if test "$enable_leave_pinned" != "no"; then 
+	       [enable the usage of mpi_leave_pinned (default:disabled)]))
+if test "$enable_leave_pinned" = "yes"; then 
    AC_MSG_RESULT([yes])
    PINNED=1
 else
@@ -197,8 +197,8 @@ AC_DEFINE_UNQUOTED([LEAVE_PINNED],$PINNED,[Wether we enable MPI_LEAVE_PINNED])
 AC_MSG_CHECKING([if we want MPI_PAFFINITY_ALONE])
 AC_ARG_ENABLE(paffinity-alone,
 AC_HELP_STRING ([--enable-paffinity-alone],
-	       [enable the usage of mpi_paffinity_alone (default:enabled)]))
-if test "$enable_paffinity_alone" != "no"; then 
+	       [enable the usage of mpi_paffinity_alone (default:disabled)]))
+if test "$enable_paffinity_alone" = "yes"; then 
    AC_MSG_RESULT([yes])
    PAFFINITY=1
 else
