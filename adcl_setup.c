@@ -837,10 +837,11 @@ static int update_adcl_request (ADCL_Request req)
 {
     char line[LINE_SIZE];
     char *tok;
-    double latency, bandwidth;
+    double latency, bandwidth,exetime;
     FILE *fp;
     int counter=0;
-
+    char *ch=NULL,*temp;
+    
     switch(test) {
 
     case OTPO_TEST_NETPIPE:
@@ -880,16 +881,16 @@ static int update_adcl_request (ADCL_Request req)
       do {
         fp = fopen ("skampi.sko","r");
         if (NULL == fp)
-	  {
+          {
             printf ("--> Can't open skampi.sko\n");
-	    sleep ( 1 );
-	    counter++;
-	  }
+            //sleep ( 1 );                                                                                                       
+            counter++;
+          }
       } while ( fp == NULL && counter < 20 );
-      
+
       if ( NULL != fp ) {
-	/* in skampi-5.0.1 the relevant information  was line 4 
-	   in skampi-5.0.4 it is line 7
+        int tmp;
+        /* in skampi-5.0.1 the relevant information  was line 4                                                                                                         in skampi-5.0.4 it is line 7                           
 	*/
         fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
@@ -897,51 +898,85 @@ static int update_adcl_request (ADCL_Request req)
         fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
         fgets (line, LINE_SIZE, fp);
-	
         fgets (line, LINE_SIZE, fp);
-	//	printf("Line parsed: %s\n", line );
-	
-        tok = strtok (line," \t");
-        tok = strtok (NULL," \t");
-	//        tok = strtok (NULL," \t");
-	//        tok = strtok (NULL," \t");
-	 latency = strtod (tok,NULL);
-//        if (debug)
-//        {
-	 //  printf ("Time taken = %f usec\n",latency);
-//        }
+        printf("Line parsed: %s\n", line );
 
-      }
+        //        tok = strtok (line," \t");                                                                                                                 
+        //        tok = strtok (NULL," \t");                                                                                                                 
+        //      latency = strtod (tok,NULL);                                                                                                                 
+        sscanf(line,"%d %lf", &tmp, &latency);
+	//        if (debug)                                                                                                                                         
+	//        {                                                                                                                                                  
+	printf ("Time taken = %f usec\n",latency);
+	//        }                                                                                                                                                  
+
+      } 
       else {
-	printf("Could not read value from skampi.sko. Adding 10000000 instead.\n");
-	latency = 100000.0;
+        printf("Could not read value from skampi.sko. Adding 10000000 instead.\n");
+        latency = 100000.0;
       }
 
       ADCL_Request_update (req, latency);
-      remove("skampi.sko");
-      
+      if ( NULL != fp ) {
+        fclose(fp);
+        //sleep(1);                                                                                                                                          
+        fsync(fp);
+        remove("skampi.sko");
+      }
       break;
+
 
     case OTPO_TEST_NPB:
     open2:
-        fp = fopen ("npb.out", "r");
-        if (NULL == fp)
+      fp = fopen ("npb.out", "r");
+      if (NULL == fp)
         {
-            if (EINTR == errno)
+	  if (EINTR == errno)
             {
-                /* try again */
-		goto open2;
+	      /* try again */
+	      goto open2;
             }
-            printf ("--> Can't open npb.out\n");
-            return FAIL;
+	  printf ("--> Can't open npb.out\n");
+	  return FAIL;
         }
-        fseek ( fp , -875 , SEEK_END );
-        fgets (line, LINE_SIZE, fp);
-        tok = strtok (line," \t");
-        latency = strtod (tok,NULL);
-        ADCL_Request_update (req, latency);
-        remove("npb.out");
-        break;
+      //commented previuos version to read time and added new version below Shweta jha                                                                     
+      /*        fseek ( fp , -466 , SEEK_END );                                                                                                            
+        fgets (line, LINE_SIZE, fp);                                                                                                                         
+        printf("Line parsed: %s\n", line );                                                                                                                  
+        tok = strtok (line," \t");                                                                                                                           
+                                                                                                                                                             
+        latency = strtod (tok,NULL);*/
+      while((fgets(line,LINE_SIZE,fp))!= NULL )
+	{
+	  //      printf("line parsed is %s \n",line);                                                                                                     
+	  ch=strtok(line," ");
+	  while(ch!=NULL)
+	    {
+	      //                    printf("%s\n", ch);                                                                                                   \
+                                                                                                                                                             
+	      if(strcmp(ch,"seconds")==0)
+		{
+		  ch=strtok(NULL,"\n");
+		  //      printf("selected %s\n",ch);                                                                                                     \
+                                                                                                                                                             
+		  temp=ch;
+		  temp=strtok(temp,"=");
+		  exetime=atof(temp);
+		  printf("time taken in seconds is %f\n",exetime);
+		}
+
+	      ch=strtok(NULL," ");
+	    }
+	}
+
+      latency=exetime;
+
+      ADCL_Request_update (req, latency);
+      fclose(fp);
+      remove("npb.out");
+      break;
+
+
 
     case OTPO_TEST_LATENCY_IO:
     open3:
