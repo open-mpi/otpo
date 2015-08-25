@@ -53,6 +53,7 @@ static void write_header(int hdl, header head);
 static void write_function_change(int hdl, function_change func_change);
 static void write_winner_decided(int hdl, winner_decided winner);
 static void endian_init (void );
+static int validate_rank(void);
 
 int ADCL_display_init()
 {
@@ -384,7 +385,7 @@ static void endian_init ()
   is_init = 1;
 }
             
-int validate_rank(void)
+static int validate_rank(void)
 {
    if(ADCL_display_flag)
    {

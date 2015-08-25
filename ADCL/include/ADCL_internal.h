@@ -93,7 +93,9 @@ int ADCL_readenv( void );
 
 int ADCL_predefined_init ( void );
 int ADCL_predefined_finalize ( void );
+int ADCL_predefined_alltoall ( void );
 int ADCL_predefined_alltoallv ( void );
+int ADCL_predefined_reduce ( void );
 
 int ADCL_hypothesis_init ( ADCL_emethod_t *e );
 int ADCL_hypothesis_shrinklist_byattr ( ADCL_emethod_t *e, int attr_pos,
@@ -107,11 +109,17 @@ int ADCL_hypothesis_eval_one_attr    ( ADCL_emethod_t *e, int num_attrs,
                        ADCL_function_t **tmp_funcs );
 int ADCL_hypothesis_eval_v3 ( ADCL_emethod_t *e );
 int ADCL_hypothesis_get_next ( ADCL_emethod_t *e );
+int ADCL_hypothesis_sync_statobjects ( ADCL_emethod_t *e );
+
 
 int ADCL_fortran_string_f2c(char *fstr, int *len, char **cstr);
 int ADCL_fortran_string_c2f(char *cstr, char *fstr, int len);
 
-int ADCL_two_init ( ADCL_emethod_t *e );
+int ADCL_twok_init ( ADCL_emethod_t *e );
 int ADCL_twok_get_next( ADCL_emethod_t *e );
+
+int ADCL_ddt_copy_content_same_ddt_generic ( MPI_Datatype dtype, int count,
+                                       void* destination_base, void* source_base, int contiguous );
+void ADCL_reduce_generic( ADCL_request_t *req,void *sendbuf,void *recvbuf,int root,ADCL_tree_t *tree,int count_by_segment,int max_outstanding_reqs );
 
 #endif /* __ADCL_INTERNAL_H__ */

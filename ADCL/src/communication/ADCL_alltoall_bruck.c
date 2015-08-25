@@ -183,9 +183,6 @@ err_hndl:
 #include "ADCL_internal.h"
 
 int ADCL_ddt_copy_content_same_ddt_generic ( MPI_Datatype dtype, int count,
-                                       void* destination_base, void* source_base, int contiguous ); 
-
-int ADCL_ddt_copy_content_same_ddt_generic ( MPI_Datatype dtype, int count,
                                        void* destination_base, void* source_base, int contiguous )
 {
     MPI_Aint lb, ext, true_lb, true_ext, old_ext; 
@@ -214,7 +211,7 @@ int ADCL_ddt_copy_content_same_ddt_generic ( MPI_Datatype dtype, int count,
         destination += true_lb;
         source      += true_lb;
 
-        memcpy ( destination, source, ext * count);
+        memcpy ( (void*) destination, (void*) source, ext * count);
         return 0;  /* completed */
     }
 
@@ -237,7 +234,7 @@ int ADCL_ddt_copy_content_same_ddt_generic ( MPI_Datatype dtype, int count,
                     src  = source      + displ * old_ext;
                     dest = destination + displ * old_ext;
 
-                    memcpy ( dest, src, blocklength*old_ext );  
+                    memcpy ( (void*) dest, (void*) src, blocklength*old_ext );
                 }
                 source += ext; 
                 destination += ext; 

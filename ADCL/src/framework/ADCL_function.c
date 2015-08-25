@@ -299,7 +299,7 @@ int ADCL_fnctset_reg_hist_fnct ( ADCL_hist_functions_t *hist_functions, ADCL_fnc
 
     /* Copy the pointer to the history functions st given by user */
     fnctset->fs_hist_functions = hist_functions;
-
+    return 0;
 }
 
 /********************************************************************************/
@@ -366,6 +366,7 @@ int ADCL_fnctset_get_fnct_num ( ADCL_fnctset_t *fnctset, ADCL_function_t*fnct )
 	    return i;
 	}
     }
+    return -1;
 }
 
 /********************************************************************************/

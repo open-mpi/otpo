@@ -248,7 +248,7 @@ int ADCL_readenv()
     /* display */
     ADCL_print_keyword_string_value ( "ADCL_DISPLAY_IP",    ADCL_display_ip );
     ADCL_print_keyword_int_value    ( "ADCL_DISPLAY_PORT", &ADCL_display_port );
-    ADCL_print_keyword_int_value    ( "ADCL_DISPLAY_RANK", &ADCL_display_rank );
+    ADCL_print_keyword_int_value    ( "ADCL_DISPLAY_RANK",  ADCL_display_rank );
 #endif
 
     return ADCL_SUCCESS;
