@@ -920,7 +920,7 @@ static int update_adcl_request (ADCL_Request req)
       if ( NULL != fp ) {
         fclose(fp);
         //sleep(1);                                                                                                                                          
-        fsync(fp);
+        fsync(fileno(fp));
         remove("skampi.sko");
       }
       break;
