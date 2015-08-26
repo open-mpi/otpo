@@ -353,6 +353,8 @@ int ADCL_get_cart_neighbor_pair ( MPI_Comm cart_comm, int ndims, int* coords, in
 
     free( coords_down );
     free( coords_up ); 
+
+    return 0;
 }
 
 

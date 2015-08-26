@@ -133,7 +133,8 @@ void ADCL_allreduce_recursivedoubling ( ADCL_request_t *req )
    tmprecv = (char*) rbuf;
 
    /* Determine nearest power of two less than or equal to size */
-   for (adjsize = 0x1; adjsize <= size; adjsize <<= 1); adjsize = adjsize >> 1;
+   for (adjsize = 0x1; adjsize <= size; adjsize <<= 1)
+       adjsize = adjsize >> 1;
 
    /* Handle non-power-of-two case:
       - Even ranks less than 2 * extra_ranks send their data to (rank + 1), and

@@ -697,7 +697,7 @@ static void ADCL_neighborhood_write( FILE *fp, ADCL_Hist hist )
         fprintf ( fp, "          <DISPL>%d</DISPL>\n", hist->h_displ[j] );
     }
     fprintf ( fp, "        </DISPLS>\n" );
-    fprintf ( fp, "        <OP>%d</OP>\n", hist->h_op );
+    fprintf ( fp, "        <OP>%p</OP>\n", (void*) hist->h_op );
     fprintf ( fp, "        <INPLACE>%d</INPLACE>\n", hist->h_inplace );
     fprintf ( fp, "      </MAP>\n");
     fprintf ( fp, "    </VECT>\n" );

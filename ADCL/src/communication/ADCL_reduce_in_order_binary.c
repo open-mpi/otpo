@@ -104,8 +104,8 @@ void ADCL_REDUCE_IN_ORDER_BINARY( ADCL_request_t *req )
 /*here the send and recv buffers have been changed and are not same as the ones in request object. what to do? - sarat
 */
     /* Use generic reduce with in-order binary tree topology and io_root */
-    ret = ADCL_reduce_generic( req,use_this_sendbuf, use_this_recvbuf, io_root, 
-                               tree, segcount, max_outstanding_reqs );
+    ADCL_reduce_generic( req,use_this_sendbuf, use_this_recvbuf, io_root,
+                         tree, segcount, max_outstanding_reqs );
 /* Clean up */
     if (io_root != root) {
         if (root == rank) {
