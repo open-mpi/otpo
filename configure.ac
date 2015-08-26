@@ -215,6 +215,8 @@ LIBS="-ladcl"
 AC_CHECK_HEADERS([ADCL.h])
 AC_CHECK_FUNCS([ADCL_Init])
 
+AC_CHECK_LIB(m, log10)
+
 #
 # Party on
 #
